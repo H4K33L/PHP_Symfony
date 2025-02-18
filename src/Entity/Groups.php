@@ -3,32 +3,24 @@
 namespace App\Entity;
 
 use App\Repository\GroupsRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
 class Groups
 {
     #[ORM\Id]
-    #[ORM\Column]
-    private ?string $uuid = null;
+    #[ORM\Column(length: 255)]
+    private ?string  $id = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     #[ORM\Column]
     private ?int $score = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
-    }
-
-    public function setID(string $ID): static
-    {
-        $this->ID = $ID;
-
-        return $this;
     }
 
     public function getName(): ?string

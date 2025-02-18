@@ -17,8 +17,6 @@ You need to install the depedences for symfony :
  - composer install
 
 You also need to generate the BDD :
-[//]: <> symfony console doctrine:database:create
-[//]: <> symfony console make:migration
  - symfony console doctrine:migrations:migrate
 
 And after this all you need to do is to run the server with :
