@@ -1,3 +1,4 @@
 app_register:
     path: /inscription
     controller: App\Controller\RegistrationController::register
+    controller: App\Controller\ConexionController::register

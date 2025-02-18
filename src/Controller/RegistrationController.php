@@ -13,6 +13,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
 {
+    #[Route('/inscription')]
+    public function display()
+    {
+        return $this->render('inscription.html.twig');
+    }
+
     #[Route('/inscription', name: 'app_register', methods: ['POST'])]
     public function register(
         Request $request,
