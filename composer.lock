@@ -4,7 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "cccf390fb8ce99e68eae3355ecaf1634",
+=======
+    "content-hash": "7e04a742b0e1aced1083d72c58d2b335",
+>>>>>>> kelyan
     "packages": [
         {
             "name": "composer/semver",
