@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal des Points - Tracker d'Habitudes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #333;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background: #3498db;
+      color: #fff;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-210px);
+      transition: transform 0.3s;
+      padding: 1rem 0.5rem;
+    }
+    .sidebar:hover { transform: translateX(0); padding: 1rem; }
+    .sidebar h2 { text-align: center; margin-bottom: 2rem; font-size: 1.2rem; }
+    .sidebar a {
+      display: block; color: #fff; text-decoration: none;
+      padding: 0.8rem 1rem; margin: 0.5rem 0; border-radius: 5px; transition: background 0.3s;
+    }
+    .sidebar a:hover { background: #2980b9; }
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      margin-left: 40px;
+      transition: margin-left 0.3s;
+    }
+    .sidebar:hover ~ .main-content { margin-left: 250px; }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 { text-align: center; color: #3498db; margin-bottom: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    table th, table td {
+      padding: 0.8rem; border: 1px solid #ddd; text-align: left;
+    }
+    table th { background: #3498db; color: #fff; }
+    .actions button {
+      padding: 0.4rem 0.8rem; border: none; border-radius: 4px;
+      cursor: pointer; transition: background 0.3s; font-size: 0.9rem; margin-right: 0.5rem;
+    }
+    .actions button.delete { background: #e74c3c; color: #fff; }
+    .actions button.delete:hover { background: #c0392b; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Menu</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="index.html">Connexion/Inscription</a>
+    <a href="habits.html">Habitudes</a>
+    <a href="groupe.html">Mon Groupe</a>
+    <a href="point.html">Journal des Points</a>
+    <a href="profile.html">Mon Profil</a>
+    <a href="logout.html">Déconnexion</a>
+  </nav>
+  <div class="main-content">
+    <div class="container">
+      <h1>Journal des Points</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Utilisateur</th>
+            <th>Points</th>
+            <th>Action</th>
+            <th>Groupe</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="pointsLogTable">
+          <tr>
+            <td>2025-02-20 10:00</td>
+            <td>Utilisateur 1</td>
+            <td>+10</td>
+            <td>Tâche accomplie</td>
+            <td>Les Champions</td>
+            <td class="actions">
+              <button class="delete" onclick="deleteLog(1)">Supprimer</button>
+            </td>
+          </tr>
+          <tr>
+            <td>2025-02-20 12:30</td>
+            <td>Utilisateur 2</td>
+            <td>-5</td>
+            <td>Tâche non accomplie</td>
+            <td>Les Champions</td>
+            <td class="actions">
+              <button class="delete" onclick="deleteLog(2)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    function deleteLog(logId) {
+      if (confirm("Êtes-vous sûr de vouloir supprimer ce log de points ?")) {
+        alert("Log " + logId + " supprimé (simulation)");
+      }
+    }
+  </script>
+</body>
+</html>
