@@ -23,7 +23,6 @@ class RegistrationController extends AbstractController
         $data = $request->request->all();
         $profilePicture = $request->files->get('profilePicture');
 
-        // Validate password match
         if ($data['password'] !== $data['confirmPassword']) {
             return new Response('Les mots de passe ne correspondent pas.', Response::HTTP_BAD_REQUEST);
         }
