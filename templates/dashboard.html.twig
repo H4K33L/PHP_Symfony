@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Tracker d'Habitudes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #333;
+    }
+    .sidebar {
+      width: 250px;
+      background: #3498db;
+      color: #fff;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-210px);
+      transition: transform 0.3s;
+      padding: 1rem 0.5rem;
+    }
+    .sidebar:hover {
+      transform: translateX(0);
+      padding: 1rem;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+    }
+    .sidebar a {
+      display: block;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    .sidebar a:hover { background: #2980b9; }
+    .main-content {
+      margin-left: 40px;
+      padding: 2rem;
+      transition: margin-left 0.3s;
+    }
+    .sidebar:hover ~ .main-content {
+      margin-left: 250px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    header h1 { font-size: 2rem; }
+    .score {
+      font-size: 1.2rem;
+      background: #eee;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+    }
+    .habits { margin-bottom: 2rem; }
+    .habits h2 { margin-bottom: 1rem; }
+    .habit {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .habit span { font-weight: bold; }
+    .habit button {
+      background: #27ae60;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .habit button:hover { background: #1e8449; }
+    .notifications { margin-top: 2rem; }
+    .notifications h2 { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Menu</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="index.html">Connexion/Inscription</a>
+    <a href="habits.html">Habitudes</a>
+    <a href="groupe.html">Mon Groupe</a>
+    <a href="point.html">Journal des Points</a>
+    <a href="profile.html">Mon Profil</a>
+    <a href="logout.html">Déconnexion</a>
+  </nav>
+  <div class="main-content">
+    <header>
+      <h1>Bienvenue, [Nom d'Utilisateur]</h1>
+      <div class="score">Score du groupe : <span id="groupScore">150</span></div>
+    </header>
+    <section class="habits">
+      <h2>Habitudes du jour</h2>
+      <div class="habit">
+        <div>
+          <p><span>Exercice</span> - Quotidien</p>
+          <small>Difficulté : Moyenne</small>
+        </div>
+        <button onclick="markHabit('exercice')">Marquer comme fait</button>
+      </div>
+      <div class="habit">
+        <div>
+          <p><span>Méditation</span> - Quotidien</p>
+          <small>Difficulté : Facile</small>
+        </div>
+        <button onclick="markHabit('meditation')">Marquer comme fait</button>
+      </div>
+    </section>
+    <section class="notifications">
+      <h2>Notifications</h2>
+      <p>Aucun point perdu depuis votre dernière connexion.</p>
+    </section>
+  </div>
+  <script>
+    function markHabit(habitId) {
+      alert("Habitude '" + habitId + "' marquée comme accomplie !");
+      const scoreElement = document.getElementById('groupScore');
+      const currentScore = parseInt(scoreElement.textContent);
+      scoreElement.textContent = currentScore + 5;
+    }
+  </script>
+</body>
+</html>
