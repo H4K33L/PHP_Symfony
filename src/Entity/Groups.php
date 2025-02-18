@@ -12,10 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 class Groups
 {
     #[ORM\Id]
-    #[ORM\Column]
-    private ?string $uuid = null;
+    #[ORM\Column(length: 255)]
+    private ?string  $id = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     #[ORM\Column]
@@ -42,13 +42,6 @@ class Groups
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setID(string $ID): static
-    {
-        $this->ID = $ID;
-
-        return $this;
     }
 
     public function getName(): ?string
