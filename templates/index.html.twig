@@ -66,6 +66,11 @@
     </div>
     <div id="registerForm" class="form">
       <h1>Inscription</h1>
+      {% if error is defined and error is not null %}
+          <div class="alert alert-danger">
+              {{ error }}
+          </div>
+      {% endif %}
       <form action="/inscription" method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <label for="registerPseudo">Pseudo</label>
