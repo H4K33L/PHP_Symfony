@@ -1,3 +1,6 @@
+<<<<<<<<< Temporary merge branch 1
+# PHP_Symfony
+=========
 Hello there welcome to the PHP_Symphony project
 
 The goal of this project is to construct a complete dynamic website 
@@ -21,3 +24,4 @@ You also need to generate the BDD :
 
 And after this all you need to do is to run the server with :
  - symfony server:start
+>>>>>>>>> Temporary merge branch 2
