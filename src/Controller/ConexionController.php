@@ -7,6 +7,7 @@ use App\Repository\UsersRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -14,9 +15,18 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ConexionController extends AbstractController
 {
-    #[Route('/')]
-    public function display(): Response
+    #[Route('/', name: 'home')]
+    public function display(Request $request, UsersRepository $usersRepository): Response
     {
+        $userId = $request->cookies->get('user_id');
+        
+        if ($userId) {
+            $user = $usersRepository->find($userId);
+            if ($user) {
+                return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
+            }
+        }
+        
         return $this->render('index.html.twig');
     }
 
@@ -32,9 +42,19 @@ class ConexionController extends AbstractController
         if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
             return new Response('Identifiants incorrects.', Response::HTTP_UNAUTHORIZED);
         }
-        return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
+        
+        $response = $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
+        $response->headers->setCookie(new Cookie('user_id', $user->getId(), strtotime('+7 days')));
+        return $response;
     }
 
+    #[Route('/deconnexion', name: 'app_logout')]
+    public function logOut(): Response
+    {
+        $response = $this->redirectToRoute('home');
+        $response->headers->clearCookie('user_id');
+        return $response;
+    }
 
     #[Route('/inscription', name: 'app_register', methods: ['POST'])]
     public function register(
@@ -55,9 +75,9 @@ class ConexionController extends AbstractController
 
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
-
         $user->setScore(0);
         $user->setLastConnection(new \DateTime());
+        
         if ($profilePicture) {
             $fileName = uniqid().'.'.$profilePicture->guessExtension();
             $profilePicture->move($this->getParameter('profile_pictures_directory'), $fileName);
@@ -70,7 +90,7 @@ class ConexionController extends AbstractController
         }
         $entityManager->persist($user);
         $entityManager->flush();
-
+        
         return new Response('Utilisateur créé avec succès.', Response::HTTP_CREATED);
     }
 }
