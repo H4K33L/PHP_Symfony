@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Uid\Uuid;
 use App\Entity\Users;
 use App\Repository\UsersRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
