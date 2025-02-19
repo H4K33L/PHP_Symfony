@@ -4,34 +4,37 @@ namespace App\Entity;
 
 use App\Repository\UsersRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
-class Users
+class Users implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
-    #[ORM\Column(length: 255)]
-    private ?string $uuid = null;
-
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
+    
     #[ORM\Column(length: 255)]
     private ?string $pseudo = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $profile_picture = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $last_connection = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $last_connection = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $group_id = null;
-
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $score = null;
+
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
     public function getId(): ?int
     {
@@ -46,7 +49,6 @@ class Users
     public function setPseudo(string $pseudo): static
     {
         $this->pseudo = $pseudo;
-
         return $this;
     }
 
@@ -58,7 +60,6 @@ class Users
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -70,7 +71,6 @@ class Users
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -79,34 +79,20 @@ class Users
         return $this->profile_picture;
     }
 
-    public function setProfilePicture(string $profile_picture): static
+    public function setProfilePicture(?string $profile_picture): static
     {
         $this->profile_picture = $profile_picture;
-
         return $this;
     }
 
-    public function getLastConnection(): ?string
+    public function getLastConnection(): ?\DateTimeInterface
     {
         return $this->last_connection;
     }
 
-    public function setLastConnection(string $last_connection): static
+    public function setLastConnection(?\DateTimeInterface $last_connection): static
     {
         $this->last_connection = $last_connection;
-
-        return $this;
-    }
-
-    public function getGroupId(): ?string
-    {
-        return $this->group_id;
-    }
-
-    public function setGroupId(string $group_id): static
-    {
-        $this->group_id = $group_id;
-
         return $this;
     }
 
@@ -118,7 +104,26 @@ class Users
     public function setScore(int $score): static
     {
         $this->score = $score;
-
         return $this;
+    }
+
+    public function getRoles(): array
+    {
+        return array_unique(array_merge($this->roles, ['ROLE_USER']));
+    }
+
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 }

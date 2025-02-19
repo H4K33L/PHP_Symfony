@@ -103,8 +103,8 @@
   </nav>
   <div class="main-content">
     <header>
-      <h1>Bienvenue, [Nom d'Utilisateur]</h1>
-      <div class="score">Score du groupe : <span id="groupScore">150</span></div>
+        <h1>Bienvenue, {{ user.pseudo }}</h1>
+        <div class="score">Score : <span>{{ user.score }}</span></div>
     </header>
     <section class="habits">
       <h2>Habitudes du jour</h2>
