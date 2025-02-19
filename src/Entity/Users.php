@@ -27,7 +27,7 @@ class Users
     #[ORM\Column(length: 255)]
     private ?string $last_connection = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $group_id = null;
 
     #[ORM\Column(length: 255)]
