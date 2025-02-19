@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Uid\Uuid;
 use App\Entity\Users;
 use App\Repository\UsersRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,6 +51,7 @@ class ConexionController extends AbstractController
             return new Response('Les mots de passe ne correspondent pas.', Response::HTTP_BAD_REQUEST);
         }
         $user = new Users();
+        $user->setId(Uuid::v4());
         $user->setPseudo($data['pseudo']);
         $user->setEmail($data['email']);
 

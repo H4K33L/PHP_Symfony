@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250219102549 extends AbstractMigration
+final class Version20250219124046 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -26,8 +26,8 @@ final class Version20250219102549 extends AbstractMigration
         $this->addSql('CREATE TABLE points_log (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, relation_id VARCHAR(255) DEFAULT NULL, user_id VARCHAR(255) DEFAULT NULL, CONSTRAINT FK_4FE554583256915B FOREIGN KEY (relation_id) REFERENCES groups (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_4FE55458A76ED395 FOREIGN KEY (user_id) REFERENCES groups (id) NOT DEFERRABLE INITIALLY IMMEDIATE)');
         $this->addSql('CREATE INDEX IDX_4FE554583256915B ON points_log (relation_id)');
         $this->addSql('CREATE INDEX IDX_4FE55458A76ED395 ON points_log (user_id)');
-        $this->addSql('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, pseudo VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, profile_picture VARCHAR(255) DEFAULT NULL, last_connection DATETIME DEFAULT NULL, score INTEGER DEFAULT NULL, roles CLOB NOT NULL --(DC2Type:json)
-        )');
+        $this->addSql('CREATE TABLE users (id VARCHAR(255) NOT NULL, pseudo VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, profile_picture VARCHAR(255) DEFAULT NULL, last_connection DATETIME DEFAULT NULL, score INTEGER DEFAULT NULL, roles CLOB NOT NULL --(DC2Type:json)
+        , PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1483A5E9E7927C74 ON users (email)');
         $this->addSql('CREATE TABLE messenger_messages (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, body CLOB NOT NULL, headers CLOB NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
         , available_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
