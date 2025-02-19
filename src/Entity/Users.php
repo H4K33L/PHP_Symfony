@@ -6,6 +6,8 @@ use App\Repository\UsersRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
 class Users implements UserInterface, PasswordAuthenticatedUserInterface
@@ -39,7 +41,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->id;
     }
-
+    
     public function setId(string $id): static
     {
         $this->id = $id;

@@ -91,6 +91,7 @@ class ConexionController extends AbstractController
 
             if (!$error) {
                 $user = new Users();
+                $user->setId(Uuid::v4());
                 $user->setPseudo($data['pseudo']);
                 $user->setEmail($data['email']);
 

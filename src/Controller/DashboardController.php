@@ -19,7 +19,7 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/dashboard/{id}', name: 'user_dashboard', methods: ['GET'])]
-    public function userDashboard(UsersRepository $usersRepository, int $id): Response
+    public function userDashboard(UsersRepository $usersRepository, string $id): Response
     {
         $user = $usersRepository->find($id);
 
