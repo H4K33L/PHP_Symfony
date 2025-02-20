@@ -56,14 +56,19 @@
       <button id="loginTab" class="active">Connexion</button>
       <button id="registerTab">Inscription</button>
     </div>
+
+    <!-- Formulaire de Connexion -->
     <div id="loginForm" class="form active">
       <h1>Connexion</h1>
       <form action="/connexion" method="POST">
-          <input type="text" name="pseudo" placeholder="Pseudo" required>
-          <input type="password" name="password" placeholder="Mot de passe" required>
+          <input type="text" id="identifier" name="pseudo" placeholder="Pseudo" required>
+          <input type="password" id="loginPassword" name="password" placeholder="Mot de passe" required>
           <button type="submit">Se connecter</button>
       </form>
+      <div class="error" id="loginError"></div> <!-- Ajout de l'élément manquant -->
     </div>
+
+    <!-- Formulaire d'Inscription -->
     <div id="registerForm" class="form">
       <h1>Inscription</h1>
       {% if error is defined and error is not null %}
@@ -99,41 +104,52 @@
       </form>
     </div>
   </div>
+
   <script>
     const loginTab = document.getElementById('loginTab');
     const registerTab = document.getElementById('registerTab');
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
+
     loginTab.addEventListener('click', () => {
       loginTab.classList.add('active');
       registerTab.classList.remove('active');
       loginForm.classList.add('active');
       registerForm.classList.remove('active');
     });
+
     registerTab.addEventListener('click', () => {
       registerTab.classList.add('active');
       loginTab.classList.remove('active');
       registerForm.classList.add('active');
       loginForm.classList.remove('active');
     });
+
     document.querySelector('#loginForm form').addEventListener('submit', function(e) {
-      const identifier = document.getElementById('identifier').value.trim();
-      const password = document.getElementById('loginPassword').value;
+      const identifier = document.querySelector('#loginForm input[name="pseudo"]').value.trim();
+      const password = document.querySelector('#loginForm input[name="password"]').value;
       const errorEl = document.getElementById('loginError');
-      errorEl.textContent = "";
-      if (!identifier || !password) {
-        e.preventDefault();
-        errorEl.textContent = "Veuillez renseigner tous les champs.";
+
+      if (errorEl) {
+        errorEl.textContent = "";
+        if (!identifier || !password) {
+          e.preventDefault();
+          errorEl.textContent = "Veuillez renseigner tous les champs.";
+        }
       }
     });
+
     document.querySelector('#registerForm form').addEventListener('submit', function(e) {
       const password = document.getElementById('registerPassword').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       const errorEl = document.getElementById('registerError');
-      errorEl.textContent = "";
-      if (password !== confirmPassword) {
-        e.preventDefault();
-        errorEl.textContent = "Les mots de passe ne correspondent pas.";
+
+      if (errorEl) {
+        errorEl.textContent = "";
+        if (password !== confirmPassword) {
+          e.preventDefault();
+          errorEl.textContent = "Les mots de passe ne correspondent pas.";
+        }
       }
     });
   </script>

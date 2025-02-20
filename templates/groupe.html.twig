@@ -81,33 +81,25 @@
     <a href="/">Connexion/Inscription</a>
     <a href="/habitsManager">Habitudes</a>
     <a href="/groupManager">Mon Groupe</a>
-    <a href="/points">Journal des Points</a>
     <a href="/profil">Mon Profil</a>
     <a href="/">Déconnexion</a>
   </nav>
   <div class="main-content">
     <div class="container">
-      <h1>Mon Groupe</h1>
-      <div class="group-info">
-        <p><strong>Nom du groupe:</strong> Les Champions</p>
-        <p><strong>Score du groupe:</strong> <span id="groupScore">150</span></p>
-      </div>
-      <div class="members">
-        <h2>Membres du groupe</h2>
-        <ul id="memberList">
-          <li>Utilisateur 1</li>
-          <li>Utilisateur 2</li>
-          <li>Utilisateur 3</li>
-        </ul>
-      </div>
-      <div class="invite">
-        <h2>Inviter un ami</h2>
-        <input type="text" id="inviteEmail" placeholder="Email ou pseudo">
-        <button onclick="inviteMember()">Inviter</button>
-      </div>
-      <div class="actions">
-        <button onclick="leaveGroup()">Quitter le groupe</button>
-      </div>
+      {% if user.group %}
+        <p><strong>Nom du groupe:</strong> {{ user.group.name }}</p>
+        <p><strong>Score du groupe:</strong> <span id="groupScore">{{ user.group.score }}</span></p>
+        <div class="actions">
+          <form action="{{ path('leave_group') }}" method="POST">
+            <button type="submit">Quitter le groupe</button>
+          </form>
+        </div>
+      {% else %}
+        <form action="{{ path('group_create') }}" method="POST">
+          <input type="text" name="group_name" placeholder="Nom du groupe" required>
+          <button type="submit">Créer un groupe</button>
+        </form>
+      {% endif %}
     </div>
   </div>
   <script>

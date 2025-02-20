@@ -9,6 +9,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV4;
 
+
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
 class Users implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -36,6 +37,21 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
+
+    #[ORM\ManyToOne(targetEntity: Groups::class, inversedBy: 'users')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Groups $group = null;    
+
+    public function getGroup(): ?Groups
+    {
+        return $this->group;
+    }
+    
+    public function setGroup(?Groups $group): static
+    {
+        $this->group = $group;
+        return $this;
+    }
 
     public function getId(): ?string
     {
@@ -81,12 +97,12 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getProfilePicture(): ?string
+    public function getProfile_Picture(): ?string
     {
         return $this->profile_picture;
     }
 
-    public function setProfilePicture(?string $profile_picture): static
+    public function setProfile_Picture(?string $profile_picture): static
     {
         $this->profile_picture = $profile_picture;
         return $this;

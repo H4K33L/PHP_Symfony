@@ -13,7 +13,7 @@ class HabitsController extends AbstractController
         return $this->render('habits.html.twig');
     }
 
-    #[Route('/habitsManager/{id}', name: 'habitsManager', methods: ['GET'])]
+    /*#[Route('/habitsManager/{id}', name: 'habitsManager', methods: ['GET'])]
     public function userHabits(UsersRepository $usersRepository, string $id): Response
     {
         $user = $usersRepository->find($id);
@@ -25,5 +25,5 @@ class HabitsController extends AbstractController
         return $this->render('habits.html.twig', [
             'user' => $user
         ]);
-    }
+    }*/
 }

@@ -9,13 +9,25 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Request;
 
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
-    public function display_dashboard(): Response
+    public function dashboard(Request $request, UsersRepository $usersRepository): Response
     {
-        return $this->render('dashboard.html.twig');
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+
+        $user = $usersRepository->find($user);
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+
+        return $this->render('dashboard.html.twig', ['user' => $user]);
     }
 
     #[Route('/dashboard/{id}', name: 'user_dashboard', methods: ['GET'])]
