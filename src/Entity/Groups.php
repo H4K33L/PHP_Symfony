@@ -5,13 +5,17 @@ namespace App\Entity;
 use App\Repository\GroupsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Users;
 
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
 class Groups
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(length: 255)]
-    private ?string  $id = null;
+    private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -22,8 +26,8 @@ class Groups
     /**
      * @var Collection<int, PointsLog>
      */
-    #[ORM\OneToMany(targetEntity: PointsLog::class, mappedBy: 'relation')]
-    private Collection $user;
+    #[ORM\OneToMany(targetEntity: Users::class, mappedBy: 'group')]
+    private Collection $users;
 
     /**
      * @var Collection<int, PointsLog>
@@ -33,7 +37,7 @@ class Groups
 
     public function __construct()
     {
-        $this->user = new ArrayCollection();
+        $this->users = new ArrayCollection();
         $this->pointsLogs = new ArrayCollection();
     }
 
@@ -67,34 +71,34 @@ class Groups
     }
 
     /**
-     * @return Collection<int, PointsLog>
+     * @return Collection<int, User>
      */
-    public function getUser(): Collection
+    public function getUsers(): Collection
     {
-        return $this->user;
+        return $this->users;
     }
 
-    public function addUser(PointsLog $user): static
+    public function addUser(Users $user): static
     {
-        if (!$this->user->contains($user)) {
-            $this->user->add($user);
-            $user->setRelation($this);
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->setGroup($this);
         }
 
         return $this;
     }
 
-    public function removeUser(PointsLog $user): static
+    public function removeUser(Users $user): static
     {
-        if ($this->user->removeElement($user)) {
-            // set the owning side to null (unless already changed)
-            if ($user->getRelation() === $this) {
-                $user->setRelation(null);
+        if ($this->users->removeElement($user)) {
+            if ($user->getGroup() === $this) {
+                $user->setGroup(null);
             }
         }
 
         return $this;
     }
+
 
     /**
      * @return Collection<int, PointsLog>

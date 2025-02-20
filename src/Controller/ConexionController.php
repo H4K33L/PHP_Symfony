@@ -13,16 +13,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
+use App\Security\LoginAuthenticator;
 
 class ConexionController extends AbstractController
 {
     #[Route('/', name: 'home')]
     public function display(Request $request, UsersRepository $usersRepository): Response
     {
-        $userId = $request->cookies->get('user_id');
+        $user = $this->getUser();
 
-        if ($userId) {
-            $user = $usersRepository->find($userId);
+        if ($user) {
+            $user = $usersRepository->find($user);
             if ($user) {
                 return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
             }
@@ -35,20 +37,23 @@ class ConexionController extends AbstractController
     public function logIn(
         Request $request,
         UsersRepository $usersRepository,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        UserAuthenticatorInterface $userAuthenticator,
+        LoginAuthenticator $authenticator
     ): Response {
         $error = null;
-
+    
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-            $user = $usersRepository->findOneBy(['pseudo' => $data['pseudo']]);
-
+            $user = $usersRepository->findOneBy(['pseudo' => $data['pseudo'] ?? '']);
+            dump($user);
+    
             if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
                 $error = 'Identifiants incorrects.';
+                dump($error);
             } else {
-                $response = $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
-                $response->headers->setCookie(new Cookie('user_id', $user->getId(), strtotime('+7 days')));
-                return $response;
+                $userAuthenticator->authenticateUser($user, $authenticator, $request);
+                return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
             }
         }
 

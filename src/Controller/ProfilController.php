@@ -14,7 +14,7 @@ class ProfilController extends AbstractController
     }
 
 
-    #[Route('/profil/{id}', name: 'profil', methods: ['GET'])]
+    /*#[Route('/profil/{id}', name: 'profil', methods: ['GET'])]
     public function userProfil(UsersRepository $usersRepository, string $id): Response
     {
         $user = $usersRepository->find($id);
@@ -26,5 +26,5 @@ class ProfilController extends AbstractController
         return $this->render('profile.html.twig', [
             'user' => $user
         ]);
-    }
+    }*/
 }
