@@ -78,7 +78,7 @@ class ProfilController extends AbstractController
                 if ($profilePicture) {
                     $fileName = uniqid() . '.' . $profilePicture->guessExtension();
                     $profilePicture->move($this->getParameter('profile_pictures_directory'), $fileName);
-                    $user->setProfilePicture($fileName);
+                    $user->setProfile_Picture($fileName);
                 }
 
                 $errors = $validator->validate($user);
@@ -88,7 +88,6 @@ class ProfilController extends AbstractController
                         break;
                     }
                 } else {
-                    $entityManager->persist($user);
                     $entityManager->flush();
                     return $this->render('profile.html.twig', ['user' => $user]);
                 }

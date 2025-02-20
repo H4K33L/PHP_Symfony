@@ -9,9 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 class Invitations
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    #[ORM\Column(length: 255)]
+    private ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -31,9 +30,15 @@ class Invitations
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $sent_at = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
+    }
+
+    public function setId(string $id): static
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getSender(): ?Users

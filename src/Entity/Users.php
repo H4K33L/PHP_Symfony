@@ -43,7 +43,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Invitations::class, mappedBy: 'receiver')]
     private ?Collection $receivedInvitations = null;
 
-
     #[ORM\OneToOne(mappedBy: 'owner', targetEntity: Groups::class, cascade: ['persist', 'remove'])]
     private ?Groups $ownedGroup = null;
 

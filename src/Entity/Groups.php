@@ -12,9 +12,8 @@ use App\Entity\Users;
 class Groups
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column(length: 255)]
+    private string $id;
 
     #[ORM\Column(length: 255)]
     private string $name;
@@ -34,9 +33,15 @@ class Groups
         $this->members = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): string
     {
         return $this->id;
+    }
+
+    public function setId(string $id): static
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getName(): string

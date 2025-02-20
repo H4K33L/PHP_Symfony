@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Uid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\GroupsRepository;
@@ -50,6 +51,7 @@ class GroupController extends AbstractController
         }
 
         $group = new Groups();
+        $group->setId(Uuid::v4());
         $group->setName($groupName);
         $group->setOwner($user);
         $entityManager->persist($group);
@@ -110,6 +112,7 @@ class GroupController extends AbstractController
         }
 
         $invitation = new Invitations();
+        $invitation->setId(Uuid::v4());
         $invitation->setSender($this->getUser());
         $invitation->setReceiver($receiver);
         $invitation->setGroup($group);
