@@ -10,6 +10,7 @@ use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class GroupController extends AbstractController
 {
@@ -26,17 +27,19 @@ class GroupController extends AbstractController
 
         return $this->render('groupe.html.twig', [
             'user' => $user,
-            'group' => $group
+            'group' => $group,
         ]);
     }
 
     #[Route('/groupManager/create', name: 'group_create', methods: ['GET', 'POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function createGroup(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
 
-        if (!$user || $user->getGroup()) {
-            return $this->redirectToRoute('groupManager');
+        if ($user->getOwnedGroup() !== null) {
+            $this->addFlash('danger', 'Vous possédez déjà un groupe.');
+            return $this->redirectToRoute('home');
         }
 
         $groupName = $request->request->get('group_name');
@@ -47,15 +50,30 @@ class GroupController extends AbstractController
 
         $group = new Groups();
         $group->setName($groupName);
-        $group->setScore(0);
-        $group->addUser($user);
+        $group->setOwner($user);
         $entityManager->persist($group);
 
         $user->setGroup($group);
-        $entityManager->persist($user);
         $entityManager->flush();
 
-        return $this->redirectToRoute('groupManager');
+        return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
+    }
+
+    #[Route('/group/{id}', name: 'group_show')]
+    public function show(GroupsRepository $groupRepository, int $id): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+        $group = $groupRepository->find($id);
+
+        return $this->render('groupe.html.twig', [
+            'user' => $this->getUser(),
+            'group' => $group,
+            'owner' => $group->getOwner() ?: null,
+            'members' => $group ? $group->getMembers() : []
+        ]);
     }
 
     #[Route('/groupManager/leave', name: 'leave_group', methods: ['GET', 'POST'])]
@@ -73,18 +91,4 @@ class GroupController extends AbstractController
 
         return $this->redirectToRoute('groupManager');
     }
-
-    /*#[Route('/groupManager/{id}', name: 'group', methods: ['GET'])]
-    public function userPoints(UsersRepository $usersRepository, string $id): Response
-    {
-        $user = $usersRepository->find($id);
-
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
-        }
-
-        return $this->render('groupe.html.twig', [
-            'user' => $user
-        ]);
-    }*/
 }
