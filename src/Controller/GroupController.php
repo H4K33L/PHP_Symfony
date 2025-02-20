@@ -6,10 +6,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\GroupsRepository;
 use App\Repository\UsersRepository;
+use App\Entity\Invitations;
 use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class GroupController extends AbstractController
 {
@@ -26,17 +28,19 @@ class GroupController extends AbstractController
 
         return $this->render('groupe.html.twig', [
             'user' => $user,
-            'group' => $group
+            'group' => $group,
         ]);
     }
 
     #[Route('/groupManager/create', name: 'group_create', methods: ['GET', 'POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function createGroup(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
 
-        if (!$user || $user->getGroup()) {
-            return $this->redirectToRoute('groupManager');
+        if ($user->getOwnedGroup() !== null) {
+            $this->addFlash('danger', 'Vous possédez déjà un groupe.');
+            return $this->redirectToRoute('home');
         }
 
         $groupName = $request->request->get('group_name');
@@ -47,15 +51,30 @@ class GroupController extends AbstractController
 
         $group = new Groups();
         $group->setName($groupName);
-        $group->setScore(0);
-        $group->addUser($user);
+        $group->setOwner($user);
         $entityManager->persist($group);
 
         $user->setGroup($group);
-        $entityManager->persist($user);
         $entityManager->flush();
 
-        return $this->redirectToRoute('groupManager');
+        return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
+    }
+
+    #[Route('/group/{id}', name: 'group_show')]
+    public function show(GroupsRepository $groupRepository, int $id): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+        $group = $groupRepository->find($id);
+
+        return $this->render('groupe.html.twig', [
+            'user' => $this->getUser(),
+            'group' => $group,
+            'owner' => $group->getOwner() ?: null,
+            'members' => $group ? $group->getMembers() : []
+        ]);
     }
 
     #[Route('/groupManager/leave', name: 'leave_group', methods: ['GET', 'POST'])]
@@ -74,17 +93,67 @@ class GroupController extends AbstractController
         return $this->redirectToRoute('groupManager');
     }
 
-    /*#[Route('/groupManager/{id}', name: 'group', methods: ['GET'])]
-    public function userPoints(UsersRepository $usersRepository, string $id): Response
+    #[Route('/group/{id}/invite', name: 'group_invite', methods: ['POST'])]
+    public function inviteUser(Request $request, Groups $group, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
     {
-        $user = $usersRepository->find($id);
+        $pseudo = $request->request->get('pseudo');
+        $receiver = $usersRepository->findOneBy(['pseudo' => $pseudo]);
 
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
+        if (!$receiver) {
+            $this->addFlash('error', 'Utilisateur non trouvé.');
+            return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
         }
 
-        return $this->render('groupe.html.twig', [
-            'user' => $user
-        ]);
-    }*/
+        if ($receiver->getGroup()) {
+            $this->addFlash('error', 'Cet utilisateur est déjà dans un groupe.');
+            return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
+        }
+
+        $invitation = new Invitations();
+        $invitation->setSender($this->getUser());
+        $invitation->setReceiver($receiver);
+        $invitation->setGroup($group);
+        $invitation->setStatus(false);
+        $invitation->setSentAt(new \DateTime());
+
+        $entityManager->persist($invitation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Invitation envoyée.');
+        return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
+    }
+
+    #[Route('/invitation/{id}/accept', name: 'invitation_accept', methods: ['POST'])]
+    public function acceptInvitation(Invitations $invitation, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if ($invitation->getReceiver() !== $user) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas accepter cette invitation.');
+        }
+
+        $group = $invitation->getGroup();
+        $user->setGroup($group);
+        $invitation->setStatus(true);
+
+        $entityManager->remove($invitation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Vous avez rejoint le groupe.');
+        return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
+    }
+
+    #[Route('/invitation/{id}/decline', name: 'invitation_decline', methods: ['POST'])]
+    public function declineInvitation(Invitations $invitation, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if ($invitation->getReceiver() !== $user) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas refuser cette invitation.');
+        }
+
+        $entityManager->remove($invitation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Invitation refusée.');
+        return $this->redirectToRoute('dashboard');
+    }
 }

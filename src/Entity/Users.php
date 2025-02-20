@@ -8,6 +8,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV4;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
@@ -38,9 +40,46 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
-    #[ORM\ManyToOne(targetEntity: Groups::class, inversedBy: 'users')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?Groups $group = null;    
+    #[ORM\OneToMany(targetEntity: Invitations::class, mappedBy: 'receiver')]
+    private ?Collection $receivedInvitations = null;
+
+
+    #[ORM\OneToOne(mappedBy: 'owner', targetEntity: Groups::class, cascade: ['persist', 'remove'])]
+    private ?Groups $ownedGroup = null;
+
+    #[ORM\ManyToOne(targetEntity: Groups::class, inversedBy: 'members')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Groups $group = null;
+
+
+    public function __construct()
+    {
+        $this->receivedInvitations = new ArrayCollection();
+    }
+
+    public function getReceivedInvitations(): Collection
+    {
+        return $this->receivedInvitations;
+    }
+
+    public function addReceivedInvitation(Invitations $invitation): self
+    {
+        if (!$this->receivedInvitations->contains($invitation)) {
+            $this->receivedInvitations[] = $invitation;
+            $invitation->setReceiver($this);
+        }
+        return $this;
+    }
+
+    public function removeReceivedInvitation(Invitations $invitation): self
+    {
+        if ($this->receivedInvitations->removeElement($invitation)) {
+            if ($invitation->getReceiver() === $this) {
+                $invitation->setReceiver(null);
+            }
+        }
+        return $this;
+    }
 
     public function getGroup(): ?Groups
     {
@@ -50,6 +89,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     public function setGroup(?Groups $group): static
     {
         $this->group = $group;
+        return $this;
+    }
+
+    public function getOwnedGroup(): ?Groups
+    {
+        return $this->ownedGroup;
+    }
+
+    public function setOwnedGroup(?Groups $ownedGroup): static
+    {
+        $this->ownedGroup = $ownedGroup;
+
         return $this;
     }
 

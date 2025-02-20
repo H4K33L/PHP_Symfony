@@ -93,7 +93,6 @@
 <body>
   <nav class="sidebar">
     <h2>Menu</h2>
-    <a href="/">Connexion/Inscription</a>
     <a href="/habitsManager">Habitudes</a>
     {% if app.user %}
         <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
@@ -142,8 +141,24 @@
             </table>
     </section>
     <section class="notifications">
-      <h2>Notifications</h2>
-      <p>Aucun point perdu depuis votre dernière connexion.</p>
+        <h2>Invitations</h2>
+        {% if user.receivedInvitations|length > 0 %}
+            <ul>
+                {% for invitation in user.receivedInvitations %}
+                    <li>
+                        Invitation de {{ invitation.sender.pseudo }} pour rejoindre {{ invitation.group.name }}
+                        <form action="{{ path('invitation_accept', {'id': invitation.id}) }}" method="POST" style="display:inline;">
+                            <button type="submit">Accepter</button>
+                        </form>
+                        <form action="{{ path('invitation_decline', {'id': invitation.id}) }}" method="POST" style="display:inline;">
+                            <button type="submit">Refuser</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Aucune invitation reçue.</p>
+        {% endif %}
     </section>
   </div>
 </body>
