@@ -110,33 +110,41 @@
     </header>
     <section class="habits">
       <h2>Habitudes du jour</h2>
-      <div class="habit">
-        <div>
-          <p><span>Exercice</span> - Quotidien</p>
-          <small>Difficulté : Moyenne</small>
-        </div>
-        <button onclick="markHabit('exercice')">Marquer comme fait</button>
-      </div>
-      <div class="habit">
-        <div>
-          <p><span>Méditation</span> - Quotidien</p>
-          <small>Difficulté : Facile</small>
-        </div>
-        <button onclick="markHabit('meditation')">Marquer comme fait</button>
-      </div>
+      <table>
+                <thead>
+                    <tr>
+                        <th>Texte</th>
+                        <th>Difficulté</th>
+                        <th>Couleur</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for habit in habits %}
+                        <tr>
+                            <td>{{ habit.getText() }}</td>
+                            <td>{{ habit.getDifficulty() }}</td>
+                            <td>
+                                <div style="width: 20px; height: 20px; background: {{ habit.getColor() }}; border-radius: 50%;"></div>
+                            </td>
+                            <td>{{ habit.isStatus() ? '✔️ Terminé' : '❌ Non terminé' }}</td>
+                            <td class="habit-actions">
+                                <form action="{{ path('toggle_habit', {'id': habit.getHabitId()}) }}" method="POST">
+                                    <button type="submit" class="toggle">
+                                        {{ habit.isStatus() ? 'Non terminé' : 'Terminé' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
     </section>
     <section class="notifications">
       <h2>Notifications</h2>
       <p>Aucun point perdu depuis votre dernière connexion.</p>
     </section>
   </div>
-  <script>
-    function markHabit(habitId) {
-      alert("Habitude '" + habitId + "' marquée comme accomplie !");
-      const scoreElement = document.getElementById('groupScore');
-      const currentScore = parseInt(scoreElement.textContent);
-      scoreElement.textContent = currentScore + 5;
-    }
-  </script>
 </body>
 </html>

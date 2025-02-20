@@ -30,18 +30,20 @@ class DashboardController extends AbstractController
         return $this->render('dashboard.html.twig', ['user' => $user]);
     }
 
-    #[Route('/dashboard/{id}', name: 'user_dashboard', methods: ['GET'])]
-    public function userDashboard(UsersRepository $usersRepository, string $id): Response
+    #[Route('/dashboard/toggleHabit/{id}', name: 'toggle_habit', methods: ['POST'])]
+    public function toggleHabit(string $id, EntityManagerInterface $entityManager): Response
     {
-        $user = $usersRepository->find($id);
+        $habit = $entityManager->getRepository(Habits::class)->find($id);
 
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
+        if (!$habit) {
+            throw $this->createNotFoundException('Habitude non trouvée');
         }
 
-        return $this->render('dashboard.html.twig', [
-            'user' => $user
-        ]);
-    }
+        $habit->setStatus(!$habit->isStatus());
 
+        $entityManager->persist($habit);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('habitsManager');
+    }
 }
