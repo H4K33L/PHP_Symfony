@@ -98,7 +98,7 @@
     <div class="container">
       <h1>Mon Profil</h1>
       <div class="profile-picture">
-        <img src= "public\uploads\profile_pictures\"{{ user.profile_picture }} alt="Photo de profil" id="profileImage">
+        <img src= "{{ asset('uploads/profile_pictures/' ~ user.profile_Picture) }}" alt="Photo de profil" id="profileImage">
       </div>
       <div class="profile-info">
         <p><strong>Pseudo :</strong> <span id="profilePseudo">{{ user.pseudo }}</span></p>
