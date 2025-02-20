@@ -3,10 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\GroupsRepository;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Users;
 
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
@@ -14,39 +13,33 @@ class Groups
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(length: 255)]
-    private ?int $id = null;
+    #[ORM\Column(type: 'integer')]
+    private int $id;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private string $name;
 
-    #[ORM\Column]
-    private ?int $score = null;
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $score = 0;
 
-    /**
-     * @var Collection<int, PointsLog>
-     */
+    #[ORM\OneToOne(inversedBy: 'ownedGroup', targetEntity: Users::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Users $owner;
+
     #[ORM\OneToMany(targetEntity: Users::class, mappedBy: 'group')]
-    private Collection $users;
-
-    /**
-     * @var Collection<int, PointsLog>
-     */
-    #[ORM\OneToMany(targetEntity: PointsLog::class, mappedBy: 'user')]
-    private Collection $pointsLogs;
+    private Collection $members;
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
-        $this->pointsLogs = new ArrayCollection();
+        $this->members = new ArrayCollection();
     }
 
-    public function getId(): ?string
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -54,11 +47,21 @@ class Groups
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
-    public function getScore(): ?int
+    public function getOwner(): Users
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(Users $owner): static
+    {
+        $this->owner = $owner;
+        return $this;
+    }
+
+    public function getScore(): int
     {
         return $this->score;
     }
@@ -66,67 +69,30 @@ class Groups
     public function setScore(int $score): static
     {
         $this->score = $score;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
+    public function getMembers(): Collection
     {
-        return $this->users;
+        return $this->members;
     }
 
-    public function addUser(Users $user): static
+    public function addMember(Users $member): static
     {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->setGroup($this);
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
+            $member->setGroup($this);
         }
-
         return $this;
     }
 
-    public function removeUser(Users $user): static
+    public function removeMember(Users $member): static
     {
-        if ($this->users->removeElement($user)) {
-            if ($user->getGroup() === $this) {
-                $user->setGroup(null);
+        if ($this->members->removeElement($member)) {
+            if ($member->getGroup() === $this) {
+                $member->setGroup(null);
             }
         }
-
-        return $this;
-    }
-
-
-    /**
-     * @return Collection<int, PointsLog>
-     */
-    public function getPointsLogs(): Collection
-    {
-        return $this->pointsLogs;
-    }
-
-    public function addPointsLog(PointsLog $pointsLog): static
-    {
-        if (!$this->pointsLogs->contains($pointsLog)) {
-            $this->pointsLogs->add($pointsLog);
-            $pointsLog->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removePointsLog(PointsLog $pointsLog): static
-    {
-        if ($this->pointsLogs->removeElement($pointsLog)) {
-            // set the owning side to null (unless already changed)
-            if ($pointsLog->getUser() === $this) {
-                $pointsLog->setUser(null);
-            }
-        }
-
         return $this;
     }
 }

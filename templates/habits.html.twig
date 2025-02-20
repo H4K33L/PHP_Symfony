@@ -110,12 +110,13 @@
   <nav class="sidebar">
     <h2>Menu</h2>
     <a href="/dashboard">Dashboard</a>
-    <a href="/">Connexion/Inscription</a>
-    <a href="/habitsManager">Habitudes</a>
-    <a href="/groupManager">Mon Groupe</a>
-    <a href="/points">Journal des Points</a>
+    {% if app.user %}
+        <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
+    {% else %}
+        <a href="/connexion">Mon Groupe</a>
+    {% endif %}
     <a href="/profil">Mon Profil</a>
-    <a href="/">Déconnexion</a>
+    <a href="/deconnexion">Déconnexion</a>
   </nav>
   <div class="main-content">
     <div class="container">

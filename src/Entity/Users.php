@@ -38,9 +38,12 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
-    #[ORM\ManyToOne(targetEntity: Groups::class, inversedBy: 'users')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?Groups $group = null;    
+    #[ORM\OneToOne(mappedBy: 'owner', targetEntity: Groups::class, cascade: ['persist', 'remove'])]
+    private ?Groups $ownedGroup = null;
+
+    #[ORM\ManyToOne(targetEntity: Groups::class, inversedBy: 'members')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Groups $group = null;
 
     public function getGroup(): ?Groups
     {
@@ -50,6 +53,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     public function setGroup(?Groups $group): static
     {
         $this->group = $group;
+        return $this;
+    }
+
+    public function getOwnedGroup(): ?Groups
+    {
+        return $this->ownedGroup;
+    }
+
+    public function setOwnedGroup(?Groups $ownedGroup): static
+    {
+        $this->ownedGroup = $ownedGroup;
+
         return $this;
     }
 
