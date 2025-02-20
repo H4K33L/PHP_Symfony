@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion des Habitudes - Tracker d'Habitudes</title>
+  <title>Gestion des Habitudes</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -11,7 +11,6 @@
       background: #f7f7f7;
       color: #333;
       display: flex;
-      min-height: 100vh;
     }
     .sidebar {
       width: 250px;
@@ -25,198 +24,234 @@
       transition: transform 0.3s;
       padding: 1rem 0.5rem;
     }
-    .sidebar:hover { transform: translateX(0); padding: 1rem; }
-    .sidebar h2 { text-align: center; margin-bottom: 2rem; font-size: 1.2rem; }
+    .sidebar:hover {
+      transform: translateX(0);
+      padding: 1rem;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.4rem;
+    }
     .sidebar a {
-      display: block; color: #fff; text-decoration: none;
-      padding: 0.8rem 1rem; margin: 0.5rem 0; border-radius: 5px; transition: background 0.3s;
+      display: block;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 5px;
+      transition: background 0.3s;
+      font-weight: bold;
     }
     .sidebar a:hover { background: #2980b9; }
     .main-content {
-      flex: 1;
-      padding: 2rem;
       margin-left: 40px;
-      transition: margin-left 0.3s;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .sidebar:hover ~ .main-content { margin-left: 250px; }
-    .container {
-      background: #fff;
-      max-width: 900px;
-      width: 100%;
       padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      transition: margin-left 0.3s;
     }
-    h1 { text-align: center; color: #3498db; margin-bottom: 1.5rem; }
-    .habit-list { margin-bottom: 2rem; }
-    .habit-item {
-      border-bottom: 1px solid #ddd;
-      padding: 0.8rem 0;
+    .sidebar:hover ~ .main-content {
+      margin-left: 250px;
+    }
+    header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 2rem;
     }
-    .habit-details { flex: 1; }
-    .habit-actions button {
-      margin-left: 0.5rem;
-      padding: 0.4rem 0.8rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
-      font-size: 0.9rem;
+    header h1 { font-size: 2rem; color: #2c3e50; }
+    .score {
+      font-size: 1.2rem;
+      background: #eee;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      font-weight: bold;
     }
-    .habit-actions button.edit { background: #f39c12; color: #fff; }
-    .habit-actions button.delete { background: #e74c3c; color: #fff; }
-    .habit-form {
-      border-top: 2px solid #3498db;
-      padding-top: 1.5rem;
+    .habits-section {
+      margin-bottom: 2rem;
     }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.4rem;
-      font-weight: 700;
-      color: #333;
+    h2 {
+      font-size: 1.6rem;
+      color: #2c3e50;
+      margin-bottom: 1rem;
     }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    form input, form button {
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
       font-size: 1rem;
     }
-    .form-actions {
-      text-align: center;
-      margin-top: 1.5rem;
+    form input[type="color"] {
+      padding: 5px;
+      width: 50px;
+      height: 40px;
     }
-    .form-actions button {
-      padding: 0.8rem 1.5rem;
-      font-size: 1rem;
+    form button {
       background: #27ae60;
       color: #fff;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
       transition: background 0.3s;
     }
-    .form-actions button:hover { background: #1e8449; }
+    form button:hover { background: #1e8449; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+      font-size: 1rem;
+    }
+    th {
+      background-color: #f4f4f4;
+      font-size: 1.2rem;
+    }
+    tr:hover {
+      background: #f9f9f9;
+    }
+    .habit-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .habit-actions button {
+      padding: 5px 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+    .habit-actions .toggle {
+      background: #3498db;
+      color: white;
+    }
+    .habit-actions .toggle:hover { background: #2980b9; }
+    .habit-actions .delete {
+      background: #e74c3c;
+      color: white;
+    }
+    .habit-actions .delete:hover { background: #c0392b; }
+    .notifications {
+      margin-top: 2rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
+
   <nav class="sidebar">
     <h2>Menu</h2>
     <a href="/dashboard">Dashboard</a>
     {% if app.user %}
-        <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
+      <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
     {% else %}
-        <a href="/connexion">Mon Groupe</a>
+      <a href="/connexion">Mon Groupe</a>
     {% endif %}
     <a href="/profil">Mon Profil</a>
     <a href="/deconnexion">Déconnexion</a>
   </nav>
+
+
+
   <div class="main-content">
-    <div class="container">
-      <h1>Gestion des Habitudes</h1>
-      <section class="habit-list">
-        <h2>Habitudes existantes</h2>
-        <div class="habit-item" data-id="1">
-          <div class="habit-details">
-            <p><strong>Texte:</strong> Faire du sport</p>
-            <p><strong>Difficulté:</strong> Moyenne</p>
-            <p><strong>Périodicité:</strong> Quotidienne</p>
-            <p><strong>Cible:</strong> Individuelle</p>
-          </div>
-          <div class="habit-actions">
-            <button class="edit" onclick="editHabit(1)">Modifier</button>
-            <button class="delete" onclick="deleteHabit(1)">Supprimer</button>
-          </div>
-        </div>
-        <div class="habit-item" data-id="2">
-          <div class="habit-details">
-            <p><strong>Texte:</strong> Méditer</p>
-            <p><strong>Difficulté:</strong> Facile</p>
-            <p><strong>Périodicité:</strong> Quotidienne</p>
-            <p><strong>Cible:</strong> Équipe</p>
-          </div>
-          <div class="habit-actions">
-            <button class="edit" onclick="editHabit(2)">Modifier</button>
-            <button class="delete" onclick="deleteHabit(2)">Supprimer</button>
-          </div>
-        </div>
-      </section>
-      <section class="habit-form">
-        <h2>Ajouter une nouvelle habitude</h2>
-        <form id="addHabitForm" onsubmit="return addHabit(event)">
-          <div class="form-group">
-            <label for="habitText">Texte de l'habitude</label>
-            <input type="text" id="habitText" name="habitText" placeholder="Décrivez l'habitude" required>
-          </div>
-          <div class="form-group">
-            <label for="difficulty">Difficulté</label>
-            <select id="difficulty" name="difficulty" required>
-              <option value="">-- Sélectionnez --</option>
-              <option value="very_easy">Très facile</option>
-              <option value="easy">Facile</option>
-              <option value="medium">Moyenne</option>
-              <option value="hard">Difficile</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="periodicity">Périodicité</label>
-            <select id="periodicity" name="periodicity" required>
-              <option value="">-- Sélectionnez --</option>
-              <option value="daily">Quotidienne</option>
-              <option value="weekly">Hebdomadaire</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="target">Cible</label>
-            <select id="target" name="target" required>
-              <option value="">-- Sélectionnez --</option>
-              <option value="individual">Individuelle</option>
-              <option value="team">Équipe</option>
-            </select>
-          </div>
-          <div class="form-actions">
-            <button type="submit">Ajouter l'habitude</button>
-          </div>
-        </form>
-      </section>
-    </div>
+    <header>
+      <h1>Bienvenue, {{ app.user.pseudo }}</h1>
+      <div class="score">Score : <span>{{ app.user.getScore() }}</span></div>
+    </header>
+
+    <section class="habits-section">
+      <h2>Ajouter une Habitude</h2>
+      <form action="{{ path('add_habit') }}" method="POST">
+        <input type="text" name="text" placeholder="Nom de l'habitude" required>
+        <input type="number" name="difficulty" placeholder="Difficulté (1-5)" required>
+        <input type="color" name="color" value="#ff0000">
+        <input type="datetime-local" name="end_time" required>
+        <button type="submit">Ajouter</button>
+      </form>
+
+      <h2>Liste des Habitudes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Texte</th>
+            <th>Difficulté</th>
+            <th>Couleur</th>
+            <th>Statut</th>
+            <th>Compte à rebours</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for habit in habits %}
+            <tr class="habit" data-habit-id="{{ habit.getHabitId() }}" data-end-time="{{ habit.getEndTime()|date('c') }}">
+              <td>{{ habit.getText() }}</td>
+              <td>{{ habit.getDifficulty() }}</td>
+              <td>
+                <div style="width: 20px; height: 20px; background: {{ habit.getColor() }}; border-radius: 50%;"></div>
+              </td>
+              <td>{{ habit.isStatus() ? '✔️ Terminé' : '❌ Non terminé' }}</td>
+              <td>
+                <span class="countdown"></span>
+              </td>
+              <td class="habit-actions">
+                <form action="{{ path('toggle_habit', {'id': habit.getHabitId()}) }}" method="POST">
+                  <button type="submit" class="toggle">
+                    {{ habit.isStatus() ? 'Non terminé' : 'Terminé' }}
+                  </button>
+                </form>
+                <form action="{{ path('delete_habit', {'id': habit.getHabitId()}) }}" method="POST">
+                  <button type="submit" class="delete" onclick="return confirm('Supprimer cette habitude ?');">🗑 Supprimer</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
   </div>
   <script>
-    function addHabit(event) {
-      event.preventDefault();
-      const text = document.getElementById('habitText').value.trim();
-      const difficulty = document.getElementById('difficulty').value;
-      const periodicity = document.getElementById('periodicity').value;
-      const target = document.getElementById('target').value;
-      if (!text || !difficulty || !periodicity || !target) {
-        alert("Veuillez remplir tous les champs.");
-        return false;
-      }
-      alert("Nouvelle habitude ajoutée : " + text);
-      document.getElementById('addHabitForm').reset();
-      return false;
-    }
-    function editHabit(habitId) {
-      alert("Modification de l'habitude avec ID : " + habitId);
-    }
-    function deleteHabit(habitId) {
-      if (confirm("Êtes-vous sûr de vouloir supprimer cette habitude ?")) {
-        alert("Habitude avec ID " + habitId + " supprimée.");
-      }
-    }
-    document.addEventListener("mousemove", function(e) {
-      let x = e.clientX / window.innerWidth;
-      let y = e.clientY / window.innerHeight;
-      document.body.style.background = `linear-gradient(135deg, rgba(116,171,226,${0.8 - x * 0.4}), rgba(85,99,222,${0.8 - y * 0.4}))`;
+    document.addEventListener('DOMContentLoaded', () => {
+      const habitRows = document.querySelectorAll('.habit');
+      habitRows.forEach(row => {
+        const habitId = row.getAttribute('data-habit-id');
+        const endTime = new Date(row.getAttribute('data-end-time'));
+        const countdownElem = row.querySelector('.countdown');
+        const interval = setInterval(() => {
+          const now = new Date();
+          const diff = endTime - now;
+          if (diff <= 0) {
+            clearInterval(interval);
+            countdownElem.textContent = "Terminé";
+            fetch(`/deleteHabit/${habitId}`, { method: 'POST' })
+              .then(response => {
+                if (response.ok) {
+                  row.remove();
+                } else {
+                  console.error('Erreur lors de la suppression automatique.');
+                }
+              })
+              .catch(error => console.error('Erreur:', error));
+          } else {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / (1000 * 60)) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+            countdownElem.textContent = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+          }
+        }, 1000);
+      });
     });
-
   </script>
+
 </body>
 </html>

@@ -43,7 +43,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Invitations::class, mappedBy: 'receiver')]
     private ?Collection $receivedInvitations = null;
 
-
     #[ORM\OneToOne(mappedBy: 'owner', targetEntity: Groups::class, cascade: ['persist', 'remove'])]
     private ?Groups $ownedGroup = null;
 
@@ -148,12 +147,12 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getProfilePicture(): ?string
+    public function getProfile_Picture(): ?string
     {
         return $this->profile_picture;
     }
 
-    public function setProfilePicture(?string $profile_picture): static
+    public function setProfile_Picture(?string $profile_picture): static
     {
         $this->profile_picture = $profile_picture;
         return $this;
