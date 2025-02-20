@@ -21,18 +21,7 @@ class ProfilController extends AbstractController
     #[Route('/profil', name: 'profil')]
     public function display_profil(Request $request, UsersRepository $usersRepository)
     {
-<<<<<<< HEAD
-        return $this->render('profile.html.twig');
-    }
-
-
-    #[Route('/profil/{id}', name: 'profil-point', methods: ['GET'])]
-    public function userProfil(UsersRepository $usersRepository, string $id): Response
-    {
-        $user = $usersRepository->find($id);
-=======
         $user = $this->getUser();
->>>>>>> kelyan
 
         if (!$user) {
             return $this->redirectToRoute('app_conexion');
