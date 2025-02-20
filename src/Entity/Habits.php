@@ -46,11 +46,20 @@ class Habits
     #[ORM\Column]
     private ?int $points = null;
 
+
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    public function setId(int $id): static
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+    
     public function getHabitId(): ?string
     {
         return $this->habit_id;
