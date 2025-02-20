@@ -94,6 +94,13 @@
                <li>{{ member.pseudo }}</li>
             {% endfor %}
         </ul>
+        <div class="invite">
+            <h2>Inviter un utilisateur</h2>
+            <form action="{{ path('group_invite', {'id': group.id}) }}" method="POST">
+                <input type="text" name="pseudo" placeholder="Pseudo de l'utilisateur" required>
+                <button type="submit">Inviter</button>
+            </form>
+        </div>
       {% else %}
         <form action="{{ path('group_create') }}" method="POST">
           <input type="text" name="group_name" placeholder="Nom du groupe" required>
