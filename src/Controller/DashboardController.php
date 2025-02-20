@@ -10,24 +10,25 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
+use App\Entity\Habits;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class DashboardController extends AbstractController
 {
-    #[Route('/dashboard', name: 'dashboard')]
-    public function dashboard(Request $request, UsersRepository $usersRepository): Response
+    #[Route('/dashboard/{id}', name: 'user_dashboard', methods: ['GET'])]
+    public function userDashboard(UsersRepository $usersRepository, string $id, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
+        $habits = $entityManager->getRepository(Habits::class)->findAll();
+        $user = $usersRepository->find($id);
 
         if (!$user) {
-            return $this->redirectToRoute('app_conexion');
+            throw $this->createNotFoundException('Utilisateur non trouvé.');
         }
 
-        $user = $usersRepository->find($user);
-        if (!$user) {
-            return $this->redirectToRoute('app_conexion');
-        }
-
-        return $this->render('dashboard.html.twig', ['user' => $user]);
+        return $this->render('dashboard.html.twig', [
+            'user' => $user,
+            'habits' => $habits
+        ]);
     }
 
     #[Route('/dashboard/toggleHabit/{id}', name: 'toggle_habit', methods: ['POST'])]

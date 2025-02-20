@@ -26,7 +26,7 @@ class ConexionController extends AbstractController
         if ($user) {
             $user = $usersRepository->find($user);
             if ($user) {
-                return $this->redirectToRoute('dashboard', ['id' => $user->getId()]);
+                return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
             }
         }
 
@@ -53,7 +53,7 @@ class ConexionController extends AbstractController
                 dump($error);
             } else {
                 $userAuthenticator->authenticateUser($user, $authenticator, $request);
-                return $this->redirectToRoute('dashboard', ['id' => $user->getId()]);
+                return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
             }
         }
 
