@@ -4,26 +4,37 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Habits;
 
 class HabitsController extends AbstractController
 {
     #[Route('/habitsManager', name: 'habitsManager')]
-    public function display_habits_manager()
+    public function display_habits_manager(EntityManagerInterface $entityManager): Response
     {
-        return $this->render('habits.html.twig');
-    }
-
-    #[Route('/habitsManager/{id}', name: 'habitsManager', methods: ['GET'])]
-    public function userHabits(UsersRepository $usersRepository, string $id): Response
-    {
-        $user = $usersRepository->find($id);
-
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
-        }
+        $habits = $entityManager->getRepository(Habits::class)->findAll();
 
         return $this->render('habits.html.twig', [
-            'user' => $user
+            'habits' => $habits,
         ]);
+    }
+
+    #[Route('/addHabit', name: 'add_habit', methods: ['POST'])]
+    public function addHabit(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $habit = new Habits();
+        $habit->setText($request->request->get('text'));
+        $habit->setDifficulty($request->request->get('difficulty'));
+        $habit->setColor($request->request->get('color'));
+        $habit->setStartTime(new \DateTime($request->request->get('start_time')));
+        $habit->setEndTime(new \DateTime($request->request->get('end_time')));
+        $habit->setCreatedAt(new \DateTime());
+
+        $entityManager->persist($habit);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('habitsManager');
     }
 }
