@@ -16,7 +16,7 @@ class Habits
     #[ORM\Column(length: 255)]
     private ?string $user_id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $group_id = null;
 
     #[ORM\Column(length: 255)]
@@ -40,13 +40,14 @@ class Habits
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $completion_date = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deadline = null; // Ajout du timer (date limite)
+
     #[ORM\Column]
     private ?bool $status = null;
 
     #[ORM\Column]
     private ?int $points = null;
-
-
 
     public function getId(): ?int
     {
@@ -56,10 +57,9 @@ class Habits
     public function setId(int $id): static
     {
         $this->id = $id;
-
         return $this;
     }
-    
+
     public function getHabitId(): ?string
     {
         return $this->habit_id;
@@ -68,7 +68,6 @@ class Habits
     public function setHabitId(string $habit_id): static
     {
         $this->habit_id = $habit_id;
-
         return $this;
     }
 
@@ -80,7 +79,6 @@ class Habits
     public function setUserId(string $user_id): static
     {
         $this->user_id = $user_id;
-
         return $this;
     }
 
@@ -89,10 +87,9 @@ class Habits
         return $this->group_id;
     }
 
-    public function setGroupId(string $group_id): static
+    public function setGroupId(?string $group_id): static
     {
         $this->group_id = $group_id;
-
         return $this;
     }
 
@@ -104,7 +101,6 @@ class Habits
     public function setText(string $text): static
     {
         $this->text = $text;
-
         return $this;
     }
 
@@ -116,7 +112,6 @@ class Habits
     public function setDifficulty(int $difficulty): static
     {
         $this->difficulty = $difficulty;
-
         return $this;
     }
 
@@ -128,7 +123,6 @@ class Habits
     public function setColor(string $color): static
     {
         $this->color = $color;
-
         return $this;
     }
 
@@ -140,7 +134,6 @@ class Habits
     public function setStartTime(\DateTimeInterface $start_time): static
     {
         $this->start_time = $start_time;
-
         return $this;
     }
 
@@ -152,7 +145,6 @@ class Habits
     public function setEndTime(\DateTimeInterface $end_time): static
     {
         $this->end_time = $end_time;
-
         return $this;
     }
 
@@ -164,7 +156,6 @@ class Habits
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
-
         return $this;
     }
 
@@ -176,7 +167,17 @@ class Habits
     public function setCompletionDate(?\DateTimeInterface $completion_date): static
     {
         $this->completion_date = $completion_date;
+        return $this;
+    }
 
+    public function getDeadline(): ?\DateTimeInterface
+    {
+        return $this->deadline;
+    }
+
+    public function setDeadline(\DateTimeInterface $deadline): static
+    {
+        $this->deadline = $deadline;
         return $this;
     }
 
@@ -185,9 +186,15 @@ class Habits
         return $this->status;
     }
 
+
     public function setStatus(bool $status): static
     {
         $this->status = $status;
+
+        if ($status) {
+            $this->points += $this->difficulty * 10;
+            $this->completion_date = new \DateTime();
+        }
 
         return $this;
     }
@@ -200,7 +207,6 @@ class Habits
     public function setPoints(int $points): static
     {
         $this->points = $points;
-
         return $this;
     }
 }

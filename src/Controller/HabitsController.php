@@ -30,7 +30,7 @@ class HabitsController extends AbstractController
         $user = $token ? $token->getUser() : null;
 
         if (!$user || !is_object($user)) {
-            return $this->redirectToRoute('app_login'); // 🔹 Sécurisation : redirection si non connecté
+            return $this->redirectToRoute('app_login');
         }
 
         $habit = new Habits();
@@ -69,19 +69,43 @@ class HabitsController extends AbstractController
     }
 
     #[Route('/toggleHabit/{id}', name: 'toggle_habit', methods: ['POST'])]
-    public function toggleHabit(string $id, EntityManagerInterface $entityManager): Response
-    {
-        $habit = $entityManager->getRepository(Habits::class)->find($id);
+public function toggleHabit(string $id, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
+{
+    $token = $tokenStorage->getToken();
+    $user = $token ? $token->getUser() : null;
 
-        if (!$habit) {
-            throw $this->createNotFoundException('Habitude non trouvée');
-        }
-
-        $habit->setStatus(!$habit->isStatus());
-
-        $entityManager->persist($habit);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('habitsManager');
+    if (!$user || !is_object($user)) {
+        return $this->redirectToRoute('app_login');
     }
+
+    $habit = $entityManager->getRepository(Habits::class)->find($id);
+
+    if (!$habit) {
+        throw $this->createNotFoundException('Habitude non trouvée');
+    }
+
+    if ($habit->isStatus()) {
+        $habit->setStatus(false);
+        $this->updateUserPoints($user, -$habit->getDifficulty() * 5, $entityManager);
+    } else {
+        $habit->setStatus(true);
+        $this->updateUserPoints($user, $habit->getDifficulty() * 5, $entityManager);
+    }
+
+    $entityManager->persist($habit);
+    $entityManager->flush();
+
+    return $this->redirectToRoute('habitsManager');
+}
+
+    private function updateUserPoints($user, int $points, EntityManagerInterface $entityManager)
+{
+    if (!$user) {
+        return;
+    }
+
+    $user->setScore($user->getScore() + $points);
+    $entityManager->persist($user);
+    $entityManager->flush();
+}
 }
