@@ -81,6 +81,7 @@
       border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s, transform 0.3s;
     }
     .form-actions button:hover { background: #4453c7; transform: translateY(-2px); }
+
     .update-message { text-align: center; margin-top: 1rem; color: green; font-weight: 700; }
   </style>
 </head>
@@ -125,10 +126,16 @@
           <label for="confirmPassword">Confirmer le mot de passe</label>
           <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirmez votre mot de passe" required>
         </div>
-        <div class="form-actions">
+        <div class="form-actions" style="display: flex; gap: 1rem; justify-content: center;">
           <button type="submit">Mettre à jour</button>
-        </div>
+          </div>
       </form>
+      <form action="{{ path('delete_profile') }}" method="post">
+      <button type="submit" class="form-actions button" style="background: #dc3545;">Supprimer mon profil</button>
+
+      </form>
+
+      <div id="updateMessage" class="update-message"></div>
       <div id="updateMessage" class="update-message"></div>
     </div>
   </div>

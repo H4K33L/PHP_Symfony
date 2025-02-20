@@ -13,8 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 use App\Security\LoginAuthenticator;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Repository\UsersRepository;
-use Symfony\Component\HttpFoundation\Response;
 
 class ProfilController extends AbstractController
 {
@@ -41,11 +39,11 @@ class ProfilController extends AbstractController
         UsersRepository $usersRepository,
         UserPasswordHasherInterface $passwordHasher,
         UserAuthenticatorInterface $userAuthenticator,
-        LoginAuthenticator $authenticator
-    ): Response { 
-
+        LoginAuthenticator $authenticator,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): Response {
         $user = $this->getUser();
-
         $data = $request->request->all();
         $profilePicture = $request->files->get('profilePicture');
         $error = null;
@@ -72,7 +70,7 @@ class ProfilController extends AbstractController
                 if ($data['email'] !== "") {
                     $user->setEmail($data['email']);
                 }
-                if ($data['password'] !== ""){
+                if ($data['password'] !== "") {
                     $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
                     $user->setPassword($hashedPassword);
                 }
@@ -80,7 +78,7 @@ class ProfilController extends AbstractController
                 if ($profilePicture) {
                     $fileName = uniqid() . '.' . $profilePicture->guessExtension();
                     $profilePicture->move($this->getParameter('profile_pictures_directory'), $fileName);
-                    $user->setProfilePicture($fileName);
+                    $user->setProfile_Picture($fileName);
                 }
 
                 $errors = $validator->validate($user);
@@ -92,7 +90,8 @@ class ProfilController extends AbstractController
                 } else {
                     $entityManager->persist($user);
                     $entityManager->flush();
-                    return $this->render('profile.html.twig', ['user' => $user]);
+                    $this->addFlash('success', 'Profil mis à jour avec succès!');
+                    return $this->redirectToRoute('profil');
                 }
             }
         }
@@ -102,4 +101,37 @@ class ProfilController extends AbstractController
             'data' => $data
         ]);
     }
+
+    #[Route('/profil/delete', name: 'delete_profile', methods: ['POST'])]
+    public function deleteProfile(
+        EntityManagerInterface $entityManager,
+        UsersRepository $usersRepository,
+        Request $request
+    ): Response {
+        $user = $this->getUser();
+
+
+
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+
+        $fullUser = $usersRepository->find($user->getId());
+        
+        if (!$fullUser) {
+            $this->addFlash('error', 'Utilisateur non trouvé.');
+            return $this->redirectToRoute('profil');
+        }
+
+        $entityManager->remove($fullUser);
+        $entityManager->flush();
+
+        $request->getSession()->invalidate();
+        $this->container->get('security.token_storage')->setToken(null);
+
+        $this->addFlash('success', 'Votre profil a été supprimé avec succès.');
+        return $this->redirectToRoute('app_conexion');
+
+}
+
 }
