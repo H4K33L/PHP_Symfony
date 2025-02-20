@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\UsersRepository;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProfilController extends AbstractController
 {
@@ -14,7 +16,7 @@ class ProfilController extends AbstractController
     }
 
 
-    #[Route('/profil/{id}', name: 'profil', methods: ['GET'])]
+    #[Route('/profil/{id}', name: 'profil-point', methods: ['GET'])]
     public function userProfil(UsersRepository $usersRepository, string $id): Response
     {
         $user = $usersRepository->find($id);
