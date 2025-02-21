@@ -46,11 +46,9 @@ class ConexionController extends AbstractController
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
             $user = $usersRepository->findOneBy(['pseudo' => $data['pseudo'] ?? '']);
-            dump($user);
     
             if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
                 $error = 'Identifiants incorrects.';
-                dump($error);
             } else {
                 $userAuthenticator->authenticateUser($user, $authenticator, $request);
                 return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);

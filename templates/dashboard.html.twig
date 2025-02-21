@@ -3,140 +3,330 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard - Tracker d'Habitudes, suivez vos habitudes quotidiennes et gérez vos invitations de groupe.">
   <title>Dashboard - Tracker d'Habitudes</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Reset global */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
-      background: #f7f7f7;
+      background-color: #f7f7f7;
       color: #333;
+      display: flex;
+      min-height: 100vh;
     }
-    .sidebar {
+    /* Fond d'écran interactif */
+    #interactive-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    /* Sidebar */
+    nav.sidebar {
       width: 250px;
-      background: #3498db;
+      background-color: #3498db;
       color: #fff;
       position: fixed;
       top: 0;
       bottom: 0;
       left: 0;
       transform: translateX(-210px);
-      transition: transform 0.3s;
+      transition: transform 0.3s ease, padding 0.3s ease;
       padding: 1rem 0.5rem;
     }
-    .sidebar:hover {
+    nav.sidebar:hover {
       transform: translateX(0);
       padding: 1rem;
     }
-    .sidebar h2 {
+    nav.sidebar h2 {
       text-align: center;
       margin-bottom: 2rem;
       font-size: 1.2rem;
     }
-    .sidebar a {
+    nav.sidebar a {
       display: block;
       color: #fff;
       text-decoration: none;
       padding: 0.8rem 1rem;
       margin: 0.5rem 0;
       border-radius: 5px;
-      transition: background 0.3s;
+      transition: background-color 0.3s ease;
     }
-    .sidebar a:hover { background: #2980b9; }
-    .main-content {
+    nav.sidebar a:hover {
+      background-color: #2980b9;
+    }
+    /* Contenu principal */
+    main.main-content {
       margin-left: 40px;
       padding: 2rem;
-      transition: margin-left 0.3s;
+      transition: margin-left 0.3s ease;
+      width: 100%;
     }
-    .sidebar:hover ~ .main-content {
+    nav.sidebar:hover ~ main.main-content {
       margin-left: 250px;
     }
+    /* En-tête */
     header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2rem;
     }
-    header h1 { font-size: 2rem; }
+    header h1 {
+      font-size: 2rem;
+    }
     .score {
       font-size: 1.2rem;
-      background: #eee;
+      background-color: #eee;
       padding: 0.5rem 1rem;
       border-radius: 5px;
     }
-    .habits { margin-bottom: 2rem; }
-    .habits h2 { margin-bottom: 1rem; }
+    /* Sections */
+    section.habits, section.notifications {
+      margin-bottom: 2rem;
+    }
+    section.habits h2, section.notifications h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    /* Habitude */
     .habit {
-      background: #fff;
+      background-color: #fff;
       padding: 1rem;
       border-radius: 5px;
       margin-bottom: 1rem;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .habit span { font-weight: bold; }
+    .habit p {
+      margin-bottom: 0.5rem;
+    }
+    .habit span {
+      font-weight: bold;
+    }
+    .habit small {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
     .habit button {
-      background: #27ae60;
+      background-color: #27ae60;
       border: none;
       color: #fff;
       padding: 0.5rem 1rem;
       border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background-color 0.3s ease;
     }
-    .habit button:hover { background: #1e8449; }
-    .notifications { margin-top: 2rem; }
-    .notifications h2 { margin-bottom: 1rem; }
+    .habit button:hover {
+      background-color: #1e8449;
+    }
+    .countdown {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    /* Notifications */
+    .notifications ul {
+      list-style-type: none;
+    }
+    .notifications li {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+    }
+    .notifications form {
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+    .message {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-size: 1.2rem;
+      color: #27ae60;
+    }
   </style>
 </head>
 <body>
-  <nav class="sidebar">
+  <canvas id="interactive-bg"></canvas>
+  <nav class="sidebar" aria-label="Menu principal">
     <h2>Menu</h2>
-    <a href="/">Connexion/Inscription</a>
     <a href="/habitsManager">Habitudes</a>
     {% if app.user %}
-        <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
+      <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
     {% else %}
-        <a href="/connexion">Mon Groupe</a>
+      <a href="/connexion">Mon Groupe</a>
     {% endif %}
     <a href="/profil">Mon Profil</a>
     <a href="/deconnexion">Déconnexion</a>
   </nav>
-  <div class="main-content">
+  <main class="main-content">
     <header>
-        <h1>Bienvenue, {{ user.pseudo }}</h1>
-        <div class="score">Score : <span>{{ user.score }}</span></div>
+      <h1>Bienvenue, {{ user.pseudo }}</h1>
+      <div class="score" aria-label="Score actuel">Score : <span>{{ user.score }}</span></div>
     </header>
-    <section class="habits">
-      <h2>Habitudes du jour</h2>
-      <div class="habit">
-        <div>
-          <p><span>Exercice</span> - Quotidien</p>
-          <small>Difficulté : Moyenne</small>
-        </div>
-        <button onclick="markHabit('exercice')">Marquer comme fait</button>
-      </div>
-      <div class="habit">
-        <div>
-          <p><span>Méditation</span> - Quotidien</p>
-          <small>Difficulté : Facile</small>
-        </div>
-        <button onclick="markHabit('meditation')">Marquer comme fait</button>
-      </div>
-    </section>
     <section class="notifications">
-      <h2>Notifications</h2>
-      <p>Aucun point perdu depuis votre dernière connexion.</p>
+      <h2>Invitations</h2>
+      {% if user.receivedInvitations|length > 0 %}
+        <ul>
+          {% for invitation in user.receivedInvitations %}
+            <li>
+              Invitation de {{ invitation.sender.pseudo }} pour rejoindre {{ invitation.group.name }}
+              <form action="{{ path('invitation_accept', {'id': invitation.id}) }}" method="POST" aria-label="Accepter l'invitation">
+                <button type="submit">Accepter</button>
+              </form>
+              <form action="{{ path('invitation_decline', {'id': invitation.id}) }}" method="POST" aria-label="Refuser l'invitation">
+                <button type="submit">Refuser</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Aucune invitation reçue.</p>
+      {% endif %}
     </section>
-  </div>
+  </main>
+  
   <script>
-    function markHabit(habitId) {
-      alert("Habitude '" + habitId + "' marquée comme accomplie !");
-      const scoreElement = document.getElementById('groupScore');
-      const currentScore = parseInt(scoreElement.textContent);
-      scoreElement.textContent = currentScore + 5;
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = document.getElementById("interactive-bg");
+      const ctx = canvas.getContext("2d");
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+       const particles = [];
+      const numParticles = 100;
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 1,
+          vy: (Math.random() - 0.5) * 1,
+          radius: 2 + Math.random() * 2
+        });
+      }
+
+       let mouseX = null, mouseY = null;
+      canvas.addEventListener("mousemove", function(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+      canvas.addEventListener("mouseleave", function() {
+        mouseX = null;
+        mouseY = null;
+      });
+
+       function updateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+         for (let i = 0; i < particles.length; i++) {
+          let p = particles[i];
+
+          p.x += p.vx;
+          p.y += p.vy;
+
+          // Rebond sur les bords
+          if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+
+          // Attraction vers la souris
+          if (mouseX !== null && mouseY !== null) {
+            let dx = mouseX - p.x;
+            let dy = mouseY - p.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 100) {
+              p.vx += dx * 0.0005;
+              p.vy += dy * 0.0005;
+            }
+          }
+
+           ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = "#3498db";
+          ctx.fill();
+        }
+
+         for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = "rgba(52, 152, 219," + (1 - distance / 100) + ")";
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+
+        requestAnimationFrame(updateParticles);
+      }
+
+      updateParticles();
+    });
+  </script>
+  
+  <!-- Chargement de Luxon pour le compte à rebours -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const { DateTime } = luxon;
+      document.querySelectorAll('.habit').forEach(row => {
+        const habitId = row.getAttribute('data-habit-id');
+        const endTime = DateTime.fromISO(row.getAttribute('data-end-time'));
+        const countdownElem = row.querySelector('.countdown');
+
+        const updateCountdown = () => {
+          const now = DateTime.now();
+          const diff = endTime.diff(now, ['days', 'hours', 'minutes', 'seconds']);
+          if (diff.as('milliseconds') <= 0) {
+            countdownElem.textContent = "Terminé";
+            clearInterval(interval);
+            // Supprime l'habitude puis déduit les points
+            fetch(`/deleteHabit/${habitId}`, { method: 'POST' })
+              .then(response => {
+                if (response.ok) {
+                  row.remove();
+                  return fetch(`/deductPoints/${habitId}`, { method: 'POST' });
+                }
+                throw new Error('Erreur lors de la suppression automatique.');
+              })
+              .then(response => {
+                if (!response.ok) {
+                  console.error('Erreur lors de la déduction des points.');
+                }
+              })
+              .catch(error => console.error('Erreur:', error));
+          } else {
+            countdownElem.textContent = `${diff.days}j ${diff.hours}h ${diff.minutes}m ${Math.floor(diff.seconds)}s`;
+          }
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+      });
+    });
   </script>
 </body>
 </html>
