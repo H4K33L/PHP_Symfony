@@ -124,6 +124,20 @@
           </tbody>
         </table>
         
+        {% if user.group %}
+          <div class="group-actions" style="margin-top: 2rem;">
+            {% if group.owner == user %}
+              <form action="{{ path('group_delete', {'id': group.id}) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')">
+                <button type="submit" style="background: #e74c3c; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer;">Supprimer le groupe</button>
+              </form>
+            {% else %}
+              <form action="{{ path('leave_group') }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir quitter ce groupe ?')">
+                <button type="submit" style="background: #f39c12; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer;">Quitter le groupe</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endif %}
+        
         <div class="invite">
           <h2>Inviter un utilisateur</h2>
           <form action="{{ path('group_invite', {'id': group.id}) }}" method="POST">
