@@ -14,6 +14,17 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      position: relative;
+      /* Permet le défilement de la page */
+      overflow: auto;
+    }
+    #interactive-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
     }
     .sidebar {
       width: 250px;
@@ -47,6 +58,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      z-index: 1;
     }
     .sidebar:hover ~ .main-content { margin-left: 250px; }
     .container {
@@ -81,10 +93,29 @@
       border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s, transform 0.3s;
     }
     .form-actions button:hover { background: #4453c7; transform: translateY(-2px); }
+    button.delete {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      color: #fff;
+      background: #e74c3c;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      margin-top: 1rem;
+      display: block;
+      width: 100%;
+    }
+    button.delete:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+    }
     .update-message { text-align: center; margin-top: 1rem; color: green; font-weight: 700; }
   </style>
 </head>
 <body>
+  <canvas id="interactive-bg"></canvas>
+  
   <nav class="sidebar">
     <h2>Menu</h2>
     <a href="/dashboard">Dashboard</a>
@@ -94,52 +125,128 @@
     {% else %}
       <a href="/connexion">Mon Groupe</a>
     {% endif %}
+    <a href="/profil">Mon Profil</a>
     <a href="/deconnexion">Déconnexion</a>
   </nav>
+  
   <div class="main-content">
     <div class="container">
       <h1>Mon Profil</h1>
       <div class="profile-picture">
-        <img src= "{{ asset('uploads/profile_pictures/' ~ user.profile_Picture) }}" alt="Photo de profil" id="profileImage">
+        <img src="{{ asset('uploads/profile_pictures/' ~ user.profile_Picture) }}" alt="Photo de profil" id="profileImage">
       </div>
       <div class="profile-info">
         <p><strong>Pseudo :</strong> <span id="profilePseudo">{{ user.pseudo }}</span></p>
         <p><strong>Email :</strong> <span id="profileEmail">{{ user.email }}</span></p>
       </div>
-      <form id="profileForm" action="/profil/update-profile" method="POST" enctype="multipart/form-data">
+      <form id="profileForm" action="{{ path('update-profil', {'id': app.user.id}) }}" method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <label for="pseudo">Modifier le pseudo</label>
-          <input type="text" id="pseudo" name="pseudo" placeholder="Nouveau pseudo">
+          <input type="text" id="pseudo" name="pseudo" placeholder="Nouveau pseudo" value="{{ app.user.pseudo }}">
         </div>
         <div class="form-group">
           <label for="email">Modifier l'email</label>
-          <input type="email" id="email" name="email" placeholder="Nouvel email">
+          <input type="email" id="email" name="email" placeholder="Nouvel email" value="{{ app.user.email }}">
         </div>
         <div class="form-group">
           <label for="profilePicture">Modifier la photo de profil</label>
           <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
         </div>
         <div class="form-group">
-          <label for="registerPassword">Mot de passe</label>
-          <input type="password" id="registerPassword" name="password" placeholder="nouveau mot de passe" required>
+          <label for="password">Nouveau mot de passe</label>
+          <input type="password" id="password" name="password" placeholder="Nouveau mot de passe">
         </div>
         <div class="form-group">
           <label for="confirmPassword">Confirmer le mot de passe</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirmez votre mot de passe" required>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirmez votre mot de passe">
         </div>
         <div class="form-actions">
           <button type="submit">Mettre à jour</button>
         </div>
       </form>
+      <form action="{{ path('delete_user', {'id': user.getId()}) }}" method="POST">
+        <button type="submit" class="delete" onclick="return confirm('Supprimer cet utilisateur ?');">🗑 Supprimer le compte ?</button>
+      </form>
       <div id="updateMessage" class="update-message"></div>
     </div>
   </div>
+  
   <script>
-    document.getElementById('profileForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      setTimeout(function() {
-        document.getElementById('updateMessage').textContent = "Profil mis à jour avec succès !";
-      }, 500);
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = document.getElementById("interactive-bg");
+      const ctx = canvas.getContext("2d");
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      const particles = [];
+      const numParticles = 100;
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 1,
+          vy: (Math.random() - 0.5) * 1,
+          radius: 2 + Math.random() * 2
+        });
+      }
+
+      let mouseX = null, mouseY = null;
+      canvas.addEventListener("mousemove", function(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+      canvas.addEventListener("mouseleave", function() {
+        mouseX = null;
+        mouseY = null;
+      });
+
+      function updateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+          let p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+          if (mouseX !== null && mouseY !== null) {
+            let dx = mouseX - p.x;
+            let dy = mouseY - p.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 100) {
+              p.vx += dx * 0.0005;
+              p.vy += dy * 0.0005;
+            }
+          }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = "#3498db";
+          ctx.fill();
+        }
+
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = "rgba(52, 152, 219," + (1 - distance / 100) + ")";
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(updateParticles);
+      }
+      updateParticles();
     });
   </script>
 </body>

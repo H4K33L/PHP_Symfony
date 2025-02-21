@@ -5,44 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mon Groupe - Tracker d'Habitudes</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Reset global */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
-      background: #f0f0f0;
+      background-color: #f0f0f0;
       display: flex;
       min-height: 100vh;
+      position: relative;
+      overflow: hidden;
     }
-    .sidebar {
+     #interactive-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    nav.sidebar {
       width: 250px;
-      background: #3498db;
+      background-color: #3498db;
       color: #fff;
       position: fixed;
       top: 0;
       bottom: 0;
       left: 0;
       transform: translateX(-210px);
-      transition: transform 0.3s;
+      transition: transform 0.3s ease, padding 0.3s ease;
       padding: 1rem 0.5rem;
     }
-    .sidebar:hover { transform: translateX(0); padding: 1rem; }
-    .sidebar h2 { text-align: center; margin-bottom: 2rem; font-size: 1.2rem; }
-    .sidebar a {
-      display: block; color: #fff; text-decoration: none;
-      padding: 0.8rem 1rem; margin: 0.5rem 0; border-radius: 5px; transition: background 0.3s;
+    nav.sidebar:hover {
+      transform: translateX(0);
+      padding: 1rem;
     }
-    .sidebar a:hover { background: #2980b9; }
+    nav.sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+    }
+    nav.sidebar a {
+      display: block;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    nav.sidebar a:hover {
+      background-color: #2980b9;
+    }
+    /* Contenu principal */
     .main-content {
-      flex: 1;
-      padding: 2rem;
       margin-left: 40px;
-      transition: margin-left 0.3s;
+      padding: 2rem;
+      transition: margin-left 0.3s ease;
+      width: 100%;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
     }
-    .sidebar:hover ~ .main-content { margin-left: 250px; }
+    nav.sidebar:hover ~ .main-content {
+      margin-left: 250px;
+    }
+    /* Titre principal */
+    .main-content > h1 {
+      text-align: center;
+      color: #3498db;
+      margin-bottom: 1.5rem;
+    }
+    /* Style de la zone container */
     .container {
-      background: #fff;
+      background-color: #fff;
       max-width: 800px;
       width: 100%;
       padding: 2rem;
@@ -50,7 +89,11 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
     }
-    h1 { text-align: center; color: #3498db; margin-bottom: 1.5rem; }
+    h1, h2, h3 {
+      text-align: center;
+      color: #3498db;
+      margin-bottom: 1.5rem;
+    }
     .score-total {
       font-size: 20px;
       font-weight: bold;
@@ -75,37 +118,59 @@
       color: white;
       font-weight: bold;
     }
-    .members-table tr:nth-child(even) { background: #f2f2f2; }
-    .members-table tr:hover { background: #ddd; }
-    .member-score { font-weight: bold; color: #28a745; }
+    .members-table tr:nth-child(even) {
+      background: #f2f2f2;
+    }
+    .members-table tr:hover {
+      background: #ddd;
+    }
+    .member-score {
+      font-weight: bold;
+      color: #28a745;
+    }
     .invite {
       margin-top: 2rem;
     }
     .invite input[type="text"] {
-      padding: 0.5rem; width: 60%; border: 1px solid #ccc; border-radius: 5px; margin-right: 0.5rem;
+      padding: 0.5rem;
+      width: 60%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 0.5rem;
     }
     .invite button {
-      padding: 0.5rem 1rem; background: #27ae60; color: #fff; border: none; border-radius: 5px;
-      cursor: pointer; transition: background 0.3s;
+      padding: 0.5rem 1rem;
+      background-color: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-    .invite button:hover { background: #1e8449; }
+    .invite button:hover {
+      background-color: #1e8449;
+    }
   </style>
 </head>
 <body>
-  <nav class="sidebar">
+  <!-- Fond d'écran interactif -->
+  <canvas id="interactive-bg"></canvas>
+  
+  <nav class="sidebar" aria-label="Menu principal">
     <h2>Menu</h2>
     <a href="/dashboard">Dashboard</a>
     <a href="/habitsManager">Habitudes</a>
     <a href="/profil">Mon Profil</a>
     <a href="/deconnexion">Déconnexion</a>
   </nav>
+  
   <div class="main-content">
+    <h1>Votre groupe</h1>
     <div class="container">
       {% if user.group %}
         <h2>Groupe : {{ group.name }}</h2>
         <p class="score-total">Score total du groupe : {{ group.score }}</p>
         <p><strong>Chef du groupe :</strong> {{ group.owner.pseudo }}</p>
-
         <h3>Membres :</h3>
         <table class="members-table">
           <thead>
@@ -153,5 +218,82 @@
       {% endif %}
     </div>
   </div>
+  
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = document.getElementById("interactive-bg");
+      const ctx = canvas.getContext("2d");
+
+       function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+       const particles = [];
+      const numParticles = 100;
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 1,
+          vy: (Math.random() - 0.5) * 1,
+          radius: 2 + Math.random() * 2
+        });
+      }
+
+       let mouseX = null, mouseY = null;
+      canvas.addEventListener("mousemove", function(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+      canvas.addEventListener("mouseleave", function() {
+        mouseX = null;
+        mouseY = null;
+      });
+
+       function updateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+         for (let i = 0; i < particles.length; i++) {
+          let p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+           if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+           if (mouseX !== null && mouseY !== null) {
+            let dx = mouseX - p.x;
+            let dy = mouseY - p.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 100) {
+              p.vx += dx * 0.0005;
+              p.vy += dy * 0.0005;
+            }
+          }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = "#3498db";
+          ctx.fill();
+        }
+         for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = "rgba(52, 152, 219," + (1 - distance / 100) + ")";
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(updateParticles);
+      }
+      updateParticles();
+    });
+  </script>
 </body>
 </html>
