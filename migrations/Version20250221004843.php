@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250220164203 extends AbstractMigration
+final class Version20250221004843 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -22,7 +22,11 @@ final class Version20250220164203 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE groups (id VARCHAR(255) NOT NULL, owner_id VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, score INTEGER DEFAULT 0 NOT NULL, PRIMARY KEY(id), CONSTRAINT FK_F06D39707E3C61F9 FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_F06D39707E3C61F9 ON groups (owner_id)');
-        $this->addSql('CREATE TABLE habits (habit_id VARCHAR(255) NOT NULL, user_id VARCHAR(255) NOT NULL, group_id VARCHAR(255) DEFAULT NULL, text VARCHAR(255) NOT NULL, difficulty INTEGER NOT NULL, color VARCHAR(255) NOT NULL, start_time DATE NOT NULL, end_time DATE NOT NULL, created_at DATE NOT NULL, completion_date DATE DEFAULT NULL, deadline DATE DEFAULT NULL, status BOOLEAN NOT NULL, points INTEGER NOT NULL, PRIMARY KEY(habit_id))');
+        $this->addSql('CREATE TABLE habits (id VARCHAR(255) NOT NULL, user_id VARCHAR(255) NOT NULL, text VARCHAR(255) NOT NULL, difficulty INTEGER NOT NULL, color VARCHAR(255) NOT NULL, start_time DATE NOT NULL, end_time DATE NOT NULL, created_at DATE NOT NULL, completion_date DATE DEFAULT NULL, deadline DATE DEFAULT NULL, status BOOLEAN NOT NULL, points INTEGER NOT NULL, PRIMARY KEY(id), CONSTRAINT FK_A541213AA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE)');
+        $this->addSql('CREATE INDEX IDX_A541213AA76ED395 ON habits (user_id)');
+        $this->addSql('CREATE TABLE habits_validated_by_users (habits_id VARCHAR(255) NOT NULL, users_id VARCHAR(255) NOT NULL, PRIMARY KEY(habits_id, users_id), CONSTRAINT FK_BE62FE0EC2F9C136 FOREIGN KEY (habits_id) REFERENCES habits (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_BE62FE0E67B3B43D FOREIGN KEY (users_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE)');
+        $this->addSql('CREATE INDEX IDX_BE62FE0EC2F9C136 ON habits_validated_by_users (habits_id)');
+        $this->addSql('CREATE INDEX IDX_BE62FE0E67B3B43D ON habits_validated_by_users (users_id)');
         $this->addSql('CREATE TABLE invitations (id VARCHAR(255) NOT NULL, sender_id VARCHAR(255) NOT NULL, receiver_id VARCHAR(255) NOT NULL, group_id VARCHAR(255) NOT NULL, status BOOLEAN NOT NULL, sent_at DATETIME NOT NULL, PRIMARY KEY(id), CONSTRAINT FK_232710AEF624B39D FOREIGN KEY (sender_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_232710AECD53EDB6 FOREIGN KEY (receiver_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_232710AEFE54D947 FOREIGN KEY (group_id) REFERENCES groups (id) NOT DEFERRABLE INITIALLY IMMEDIATE)');
         $this->addSql('CREATE INDEX IDX_232710AEF624B39D ON invitations (sender_id)');
         $this->addSql('CREATE INDEX IDX_232710AECD53EDB6 ON invitations (receiver_id)');
@@ -46,6 +50,7 @@ final class Version20250220164203 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP TABLE groups');
         $this->addSql('DROP TABLE habits');
+        $this->addSql('DROP TABLE habits_validated_by_users');
         $this->addSql('DROP TABLE invitations');
         $this->addSql('DROP TABLE users');
         $this->addSql('DROP TABLE messenger_messages');

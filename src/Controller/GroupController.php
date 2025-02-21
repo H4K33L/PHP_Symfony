@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class GroupController extends AbstractController
 {
     #[Route('/groupManager', name: 'groupManager')]
-    public function display_group(UsersRepository $usersRepository): Response
+    public function display_group(UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
 
@@ -26,6 +26,9 @@ class GroupController extends AbstractController
         }
 
         $group = $user->getGroup();
+        if ($group) {
+            $this->updateGroupScore($group, $entityManager);
+        }
 
         return $this->render('groupe.html.twig', [
             'user' => $user,
@@ -58,18 +61,22 @@ class GroupController extends AbstractController
 
         $user->setGroup($group);
         $entityManager->flush();
+        $this->updateGroupScore($group, $entityManager); 
 
         return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
     }
 
     #[Route('/group/{id}', name: 'group_show')]
-    public function show(GroupsRepository $groupRepository, string $id): Response
+    public function show(GroupsRepository $groupRepository, EntityManagerInterface $entityManager, string $id): Response
     {
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_conexion');
         }
         $group = $groupRepository->find($id);
+        if ($group) {
+            $this->updateGroupScore($group, $entityManager);
+        }
 
         return $this->render('groupe.html.twig', [
             'user' => $this->getUser(),
@@ -83,15 +90,20 @@ class GroupController extends AbstractController
     public function leaveGroup(EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-
+    
         if (!$user || !$user->getGroup()) {
             return $this->redirectToRoute('groupManager');
         }
-
+    
+        $group = $user->getGroup();
         $user->setGroup(null);
         $entityManager->persist($user);
         $entityManager->flush();
-
+        
+        if ($group) {
+            $this->updateGroupScore($group, $entityManager);
+        }
+    
         return $this->redirectToRoute('groupManager');
     }
 
@@ -140,6 +152,7 @@ class GroupController extends AbstractController
 
         $entityManager->remove($invitation);
         $entityManager->flush();
+        $this->updateGroupScore($group, $entityManager); 
 
         $this->addFlash('success', 'Vous avez rejoint le groupe.');
         return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
@@ -158,5 +171,21 @@ class GroupController extends AbstractController
 
         $this->addFlash('success', 'Invitation refusée.');
         return $this->redirectToRoute('dashboard');
+    }
+
+    private function updateGroupScore(?Groups $group, EntityManagerInterface $entityManager): void
+    {
+        if (!$group) {
+            return;
+        }
+    
+        $score = 0;
+        foreach ($group->getMembers() as $member) {
+            $score += $member->getScore();
+        }
+    
+        $group->setScore($score);
+        $entityManager->persist($group);
+        $entityManager->flush();
     }
 }

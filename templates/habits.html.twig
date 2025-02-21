@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestion des Habitudes</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      color: #333;
-      display: flex;
-    }
+      body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            color: #333;
+            display: flex;
+          }
     .sidebar {
       width: 250px;
       background: #3498db;
@@ -82,11 +81,6 @@
       border-radius: 5px;
       font-size: 1rem;
     }
-    form input[type="color"] {
-      padding: 5px;
-      width: 50px;
-      height: 40px;
-    }
     form button {
       background: #27ae60;
       color: #fff;
@@ -145,6 +139,16 @@
       border-radius: 5px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
+    .color-indicator {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .habit-actions .delete.disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -160,9 +164,6 @@
     <a href="/profil">Mon Profil</a>
     <a href="/deconnexion">Déconnexion</a>
   </nav>
-
-
-
   <div class="main-content">
     <header>
       <h1>Bienvenue, {{ app.user.pseudo }}</h1>
@@ -173,9 +174,7 @@
       <h2>Ajouter une Habitude</h2>
       <form action="{{ path('add_habit') }}" method="POST">
         <input type="text" name="text" placeholder="Nom de l'habitude" required>
-        <input type="number" name="difficulty" placeholder="Difficulté (1-5)" required>
-        <input type="color" name="color" value="#ff0000">
-        <input type="datetime-local" name="end_time" required>
+        <input type="number" name="difficulty" placeholder="Difficulté (1-3)" min="1" max="3" required>
         <button type="submit">Ajouter</button>
       </form>
 
@@ -193,25 +192,29 @@
         </thead>
         <tbody>
           {% for habit in habits %}
-            <tr class="habit" data-habit-id="{{ habit.getHabitId() }}" data-end-time="{{ habit.getEndTime()|date('c') }}">
+            <tr class="habit" data-habit-id="{{ habit.getId() }}" data-end-time="{{ habit.getEndTime()|date('c') }}">
               <td>{{ habit.getText() }}</td>
               <td>{{ habit.getDifficulty() }}</td>
               <td>
-                <div style="width: 20px; height: 20px; background: {{ habit.getColor() }}; border-radius: 50%;"></div>
+                <div class="color-indicator" style="background: {{ habit.getColor() }};"></div>
               </td>
-              <td>{{ habit.isStatus() ? '✔️ Terminé' : '❌ Non terminé' }}</td>
+              <td>{{ habit.validatedByUsers.contains(app.user) ? '✔️ Terminé' : '❌ Non terminé' }}</td>
               <td>
                 <span class="countdown"></span>
               </td>
               <td class="habit-actions">
-                <form action="{{ path('toggle_habit', {'id': habit.getHabitId()}) }}" method="POST">
+                <form action="{{ path('toggle_habit', {'id': habit.getId()}) }}" method="POST">
                   <button type="submit" class="toggle">
-                    {{ habit.isStatus() ? 'Non terminé' : 'Terminé' }}
+                    {{ habit.validatedByUsers.contains(app.user) ? 'Non terminé' : 'Terminé' }}
                   </button>
                 </form>
-                <form action="{{ path('delete_habit', {'id': habit.getHabitId()}) }}" method="POST">
-                  <button type="submit" class="delete" onclick="return confirm('Supprimer cette habitude ?');">🗑 Supprimer</button>
-                </form>
+                {% if habit.getText() != 'Faire du sport' and habit.getText() != 'Lire un livre' %}
+                  <form action="{{ path('delete_habit', {'id': habit.getId()}) }}" method="POST">
+                    <button type="submit" class="delete" onclick="return confirm('Supprimer cette habitude ?');">🗑 Supprimer</button>
+                  </form>
+                {% else %}
+                  <button class="delete disabled" disabled>🗑 Supprimer</button>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -219,39 +222,53 @@
       </table>
     </section>
   </div>
+
+  <!-- Inclure Luxon -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const { DateTime } = luxon;
       const habitRows = document.querySelectorAll('.habit');
       habitRows.forEach(row => {
         const habitId = row.getAttribute('data-habit-id');
-        const endTime = new Date(row.getAttribute('data-end-time'));
+        const endTime = DateTime.fromISO(row.getAttribute('data-end-time'));
         const countdownElem = row.querySelector('.countdown');
-        const interval = setInterval(() => {
-          const now = new Date();
-          const diff = endTime - now;
-          if (diff <= 0) {
-            clearInterval(interval);
+
+        const updateCountdown = () => {
+          const now = DateTime.now();
+          const diff = endTime.diff(now, ['days', 'hours', 'minutes', 'seconds']);
+
+          if (diff.as('milliseconds') <= 0) {
             countdownElem.textContent = "Terminé";
+            clearInterval(interval);
+
             fetch(`/deleteHabit/${habitId}`, { method: 'POST' })
               .then(response => {
                 if (response.ok) {
                   row.remove();
+                  fetch(`/deductPoints/${habitId}`, { method: 'POST' })
+                    .then(response => {
+                      if (response.ok) {
+                        console.log('Points déduits avec succès.');
+                      } else {
+                        console.error('Erreur lors de la déduction des points.');
+                      }
+                    })
+                    .catch(error => console.error('Erreur:', error));
                 } else {
                   console.error('Erreur lors de la suppression automatique.');
                 }
               })
               .catch(error => console.error('Erreur:', error));
           } else {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((diff / (1000 * 60)) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
-            countdownElem.textContent = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+            countdownElem.textContent = `${diff.days}j ${diff.hours}h ${diff.minutes}m ${Math.floor(diff.seconds)}s`;
           }
-        }, 1000);
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
       });
     });
   </script>
-
 </body>
 </html>

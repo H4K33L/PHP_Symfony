@@ -88,6 +88,19 @@
     .habit button:hover { background: #1e8449; }
     .notifications { margin-top: 2rem; }
     .notifications h2 { margin-bottom: 1rem; }
+    .countdown {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .message {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      text-align: center;
+      font-size: 1.2rem;
+      color: #27ae60;
+    }
   </style>
 </head>
 <body>
@@ -109,20 +122,27 @@
     </header>
     <section class="habits">
       <h2>Habitudes du jour</h2>
-      <div class="habit">
-        <div>
-          <p><span>Exercice</span> - Quotidien</p>
-          <small>Difficulté : Moyenne</small>
-        </div>
-        <button onclick="markHabit('exercice')">Marquer comme fait</button>
-      </div>
-      <div class="habit">
-        <div>
-          <p><span>Méditation</span> - Quotidien</p>
-          <small>Difficulté : Facile</small>
-        </div>
-        <button onclick="markHabit('meditation')">Marquer comme fait</button>
-      </div>
+      {% set allHabitsValidated = true %}
+      {% for habit in dailyHabits %}
+        {% if not habit.validatedByUsers.contains(user) %}
+          {% set allHabitsValidated = false %}
+          <div class="habit" data-habit-id="{{ habit.Id }}" data-end-time="{{ habit.endTime|date('c') }}">
+            <div>
+              <p><span>{{ habit.text }}</span> - Quotidien</p>
+              <small>Difficulté : {{ habit.difficulty }}</small>
+              <div class="countdown"></div>
+            </div>
+            <form action="{{ path('toggle_habit', {'id': habit.Id}) }}" method="POST">
+              <button type="submit" class="toggle">
+                Terminé
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      {% endfor %}
+      {% if allHabitsValidated %}
+        <div class="message">Les tâches journalières sont accomplies !</div>
+      {% endif %}
     </section>
     <section class="notifications">
         <h2>Invitations</h2>
@@ -145,13 +165,53 @@
         {% endif %}
     </section>
   </div>
+
+  <!-- Inclure Luxon -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
   <script>
-    function markHabit(habitId) {
-      alert("Habitude '" + habitId + "' marquée comme accomplie !");
-      const scoreElement = document.getElementById('groupScore');
-      const currentScore = parseInt(scoreElement.textContent);
-      scoreElement.textContent = currentScore + 5;
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const { DateTime } = luxon;
+      const habitRows = document.querySelectorAll('.habit');
+      habitRows.forEach(row => {
+        const habitId = row.getAttribute('data-habit-id');
+        const endTime = DateTime.fromISO(row.getAttribute('data-end-time'));
+        const countdownElem = row.querySelector('.countdown');
+
+        const updateCountdown = () => {
+          const now = DateTime.now();
+          const diff = endTime.diff(now, ['days', 'hours', 'minutes', 'seconds']);
+
+          if (diff.as('milliseconds') <= 0) {
+            countdownElem.textContent = "Terminé";
+            clearInterval(interval);
+
+            fetch(`/deleteHabit/${habitId}`, { method: 'POST' })
+              .then(response => {
+                if (response.ok) {
+                  row.remove();
+                  fetch(`/deductPoints/${habitId}`, { method: 'POST' })
+                    .then(response => {
+                      if (response.ok) {
+                        console.log('Points déduits avec succès.');
+                      } else {
+                        console.error('Erreur lors de la déduction des points.');
+                      }
+                    })
+                    .catch(error => console.error('Erreur:', error));
+                } else {
+                  console.error('Erreur lors de la suppression automatique.');
+                }
+              })
+              .catch(error => console.error('Erreur:', error));
+          } else {
+            countdownElem.textContent = `${diff.days}j ${diff.hours}h ${diff.minutes}m ${Math.floor(diff.seconds)}s`;
+          }
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+      });
+    });
   </script>
 </body>
 </html>
