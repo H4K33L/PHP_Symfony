@@ -98,21 +98,22 @@ class ProfilController extends AbstractController
     }
 
     #[Route('/deleteuser/{id}', name: 'delete_user', methods: ['POST'])]
-    public function deleteHabit(string $id, EntityManagerInterface $entityManager): Response
+    public function deleteUser(string $id, EntityManagerInterface $entityManager): Response
     {
         $user = $entityManager->getRepository(Users::class)->find($id);
 
         if (!$user) {
-            throw $this->createNotFoundException('utilisateur non trouvée');
+            throw $this->createNotFoundException('Utilisateur non trouvé');
         }
 
-        $groupId = $user->getGroupId();
+        $groupId = $user->getGroup();
 
         if ($groupId) {
-            $usersInSameGroup = $entityManager->getRepository(Users::class)->findBy(['group_id' => $groupId]);
+            $usersInSameGroup = $entityManager->getRepository(Users::class)->findBy(['group' => $groupId]);
+
             foreach ($usersInSameGroup as $groupMember) {
                 if ($groupMember->getId() !== $user->getId()) {
-                    $groupMember->setGroupId(null);
+                    $groupMember->setGroup(null);
                     $entityManager->persist($groupMember);
                 }
             }
@@ -123,19 +124,4 @@ class ProfilController extends AbstractController
 
         return $this->redirectToRoute('home');
     }
-    #[Route('/deleteuser/{id}', name: 'delete_user', methods: ['POST'])]
-public function deleteUser(string $id, EntityManagerInterface $entityManager): Response
-{
-    $user = $entityManager->getRepository(Users::class)->find($id);
-
-    if (!$user) {
-        throw $this->createNotFoundException('Utilisateur non trouvé');
-    }
-
-    // Supprimer l'utilisateur
-    $entityManager->remove($user);
-    $entityManager->flush();
-
-    return $this->redirectToRoute('home');
-}
 }
