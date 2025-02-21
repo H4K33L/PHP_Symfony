@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\UsersRepository;
+use App\Repository\HabitsRepository;
 use App\Entity\Users;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,8 +16,31 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class DashboardController extends AbstractController
 {
+    #[Route('/dashboard', name: 'dashboard')]
+    public function dashboard(Request $request, UsersRepository $usersRepository, HabitsRepository $habitsRepository): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+        
+        $user = $usersRepository->find($user);
+        if (!$user) {
+            return $this->redirectToRoute('app_conexion');
+        }
+        
+        $dailyHabits = $habitsRepository->findBy([
+            'text' => ['Faire du sport', 'Lire un livre']
+        ]);
+
+        return $this->render('dashboard.html.twig', [
+            'user' => $user,
+            'dailyHabits' => $dailyHabits
+        ]);
+    }
+
     #[Route('/dashboard/{id}', name: 'user_dashboard', methods: ['GET'])]
-    public function userDashboard(UsersRepository $usersRepository, string $id, EntityManagerInterface $entityManager): Response
+    public function userDashboard(UsersRepository $usersRepository, HabitsRepository $habitsRepository, string $id): Response
     {
         $habits = $entityManager->getRepository(Habits::class)->findAll();
         $user = $usersRepository->find($id);
@@ -25,26 +49,13 @@ class DashboardController extends AbstractController
             throw $this->createNotFoundException('Utilisateur non trouvé.');
         }
 
+        $dailyHabits = $habitsRepository->findBy([
+            'text' => ['Faire du sport', 'Lire un livre']
+        ]);
+
         return $this->render('dashboard.html.twig', [
             'user' => $user,
-            'habits' => $habits
+            'dailyHabits' => $dailyHabits
         ]);
-    }
-
-    #[Route('/dashboard/toggleHabit/{id}', name: 'toggle_habit', methods: ['POST'])]
-    public function toggleHabit(string $id, EntityManagerInterface $entityManager): Response
-    {
-        $habit = $entityManager->getRepository(Habits::class)->find($id);
-
-        if (!$habit) {
-            throw $this->createNotFoundException('Habitude non trouvée');
-        }
-
-        $habit->setStatus(!$habit->isStatus());
-
-        $entityManager->persist($habit);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('habitsManager');
     }
 }

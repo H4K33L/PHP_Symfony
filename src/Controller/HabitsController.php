@@ -30,20 +30,17 @@ class HabitsController extends AbstractController
         $user = $token ? $token->getUser() : null;
 
         if (!$user || !is_object($user)) {
-            return $this->redirectToRoute('app_login'); // 🔹 Sécurisation : redirection si non connecté
+            return $this->redirectToRoute('app_login');
         }
 
         $habit = new Habits();
-        
 
-        $habit->setHabitId(Uuid::v4());
-        $habit->setUserId($user->getId()); 
+        $habit->setId(Uuid::v4());
+        $habit->setUser($user);
         $habit->setText($request->request->get('text'));
         $habit->setDifficulty((int) $request->request->get('difficulty'));
-        $habit->setColor($request->request->get('color'));
-        $habit->setStartTime(new \DateTime());
-        $habit->setEndTime((new \DateTime())->modify('+7 days'));
         $habit->setCreatedAt(new \DateTime());
+        $habit->setEndTime((new \DateTime())->modify('+24 hours'));
         $habit->setStatus(false);
         $habit->setPoints(0);
 
@@ -69,19 +66,65 @@ class HabitsController extends AbstractController
     }
 
     #[Route('/toggleHabit/{id}', name: 'toggle_habit', methods: ['POST'])]
-    public function toggleHabit(string $id, EntityManagerInterface $entityManager): Response
+    public function toggleHabit(string $id, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
     {
+        $token = $tokenStorage->getToken();
+        $user = $token ? $token->getUser() : null;
+
+        if (!$user || !is_object($user)) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $habit = $entityManager->getRepository(Habits::class)->find($id);
 
         if (!$habit) {
             throw $this->createNotFoundException('Habitude non trouvée');
         }
 
-        $habit->setStatus(!$habit->isStatus());
+        if ($habit->getValidatedByUsers()->contains($user)) {
+            $habit->removeValidatedByUser($user);
+            $this->updateUserPoints($user, -$habit->getDifficulty() * 5, $entityManager);
+        } else {
+            $habit->addValidatedByUser($user);
+            $this->updateUserPoints($user, $habit->getDifficulty() * 5, $entityManager);
+        }
 
         $entityManager->persist($habit);
         $entityManager->flush();
 
         return $this->redirectToRoute('habitsManager');
+    }
+
+    private function updateUserPoints($user, int $points, EntityManagerInterface $entityManager): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        $user->setScore($user->getScore() + $points);
+        $entityManager->persist($user);
+        $entityManager->flush();
+    }
+
+    #[Route('/deductPoints/{id}', name: 'deduct_points', methods: ['POST'])]
+    public function deductPoints(string $id, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
+    {
+        $token = $tokenStorage->getToken();
+        $user = $token ? $token->getUser() : null;
+
+        if (!$user || !is_object($user)) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $habit = $entityManager->getRepository(Habits::class)->find($id);
+
+        if (!$habit) {
+            throw $this->createNotFoundException('Habitude non trouvée');
+        }
+
+        $pointsToDeduct = $habit->getDifficulty() * 10;
+        $this->updateUserPoints($user, -$pointsToDeduct, $entityManager);
+
+        return new Response('Points déduits avec succès.', 200);
     }
 }

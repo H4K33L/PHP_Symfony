@@ -43,32 +43,28 @@ class ProfilController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): Response {
-        // Récupération de l'utilisateur connecté
         /** @var Users $user */
         $user = $this->getUser();
+        $user = $usersRepository->find($this->getUser()->getId());
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
-        // Récupération des données du formulaire
         $data = $request->request->all();
         $profilePicture = $request->files->get('profilePicture');
         $error = null;
 
         if ($request->isMethod('POST')) {
-            // Vérification du pseudo (s'il est déjà utilisé par un autre utilisateur)
             $userExists = $usersRepository->findOneBy(['pseudo' => $data['pseudo']]);
             if ($userExists && $userExists->getId() !== $user->getId()) {
                 $error = 'Ce pseudo est déjà pris.';
             }
 
-            // Vérification de l'email
             $emailExists = $usersRepository->findOneBy(['email' => $data['email']]);
             if (!$error && $emailExists && $emailExists->getId() !== $user->getId()) {
                 $error = 'Cet email est déjà utilisé.';
             }
 
-            // Vérification des mots de passe
             if (!$error && $data['password'] !== $data['confirmPassword']) {
                 $error = 'Les mots de passe ne correspondent pas.';
             }
@@ -87,15 +83,12 @@ class ProfilController extends AbstractController
 
                 if ($profilePicture) {
                     $fileName = uniqid() . '.' . $profilePicture->guessExtension();
-                    // Assurez-vous que le paramètre 'profile_pictures_directory' est défini dans vos paramètres de configuration
                     $profilePicture->move($this->getParameter('profile_pictures_directory'), $fileName);
                     $user->setProfilePicture($fileName);
                 }
 
-                // Validation de l'entité utilisateur
                 $errors = $validator->validate($user);
                 if (count($errors) > 0) {
-                    // Récupération du premier message d'erreur
                     foreach ($errors as $e) {
                         $error = $e->getMessage();
                         break;

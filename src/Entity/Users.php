@@ -11,14 +11,13 @@ use Symfony\Component\Uid\UuidV4;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
 class Users implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(length: 255)]
     private ?string $id = null;
-    
+
     #[ORM\Column(length: 255, unique: true)]
     private ?string $pseudo = null;
 
@@ -50,10 +49,17 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Groups $group = null;
 
+    #[ORM\OneToMany(targetEntity: Habits::class, mappedBy: 'user')]
+    private Collection $habits;
+
+    #[ORM\ManyToMany(targetEntity: Habits::class, mappedBy: 'validatedByUsers')]
+    private Collection $validatedHabits;
 
     public function __construct()
     {
         $this->receivedInvitations = new ArrayCollection();
+        $this->habits = new ArrayCollection();
+        $this->validatedHabits = new ArrayCollection();
     }
 
     public function getReceivedInvitations(): Collection
@@ -84,7 +90,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->group;
     }
-    
+
     public function setGroup(?Groups $group): static
     {
         $this->group = $group;
@@ -99,7 +105,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOwnedGroup(?Groups $ownedGroup): static
     {
         $this->ownedGroup = $ownedGroup;
-
         return $this;
     }
 
@@ -107,7 +112,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->id;
     }
-    
+
     public function setId(string $id): static
     {
         $this->id = $id;
@@ -198,5 +203,51 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
+    }
+
+    public function getHabits(): Collection
+    {
+        return $this->habits;
+    }
+
+    public function addHabit(Habits $habit): static
+    {
+        if (!$this->habits->contains($habit)) {
+            $this->habits[] = $habit;
+            $habit->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeHabit(Habits $habit): static
+    {
+        if ($this->habits->removeElement($habit)) {
+            if ($habit->getUser() === $this) {
+                $habit->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getValidatedHabits(): Collection
+    {
+        return $this->validatedHabits;
+    }
+
+    public function addValidatedHabit(Habits $habit): static
+    {
+        if (!$this->validatedHabits->contains($habit)) {
+            $this->validatedHabits[] = $habit;
+            $habit->addValidatedByUser($this);
+        }
+        return $this;
+    }
+
+    public function removeValidatedHabit(Habits $habit): static
+    {
+        if ($this->validatedHabits->removeElement($habit)) {
+            $habit->removeValidatedByUser($this);
+        }
+        return $this;
     }
 }

@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\InvitationsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: InvitationsRepository::class)]
 class Invitations
