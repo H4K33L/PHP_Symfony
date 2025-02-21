@@ -106,9 +106,36 @@ class ProfilController extends AbstractController
             throw $this->createNotFoundException('utilisateur non trouvée');
         }
 
+        $groupId = $user->getGroupId();
+
+        if ($groupId) {
+            $usersInSameGroup = $entityManager->getRepository(Users::class)->findBy(['group_id' => $groupId]);
+            foreach ($usersInSameGroup as $groupMember) {
+                if ($groupMember->getId() !== $user->getId()) {
+                    $groupMember->setGroupId(null);
+                    $entityManager->persist($groupMember);
+                }
+            }
+        }
+
         $entityManager->remove($user);
         $entityManager->flush();
 
         return $this->redirectToRoute('home');
     }
+    #[Route('/deleteuser/{id}', name: 'delete_user', methods: ['POST'])]
+public function deleteUser(string $id, EntityManagerInterface $entityManager): Response
+{
+    $user = $entityManager->getRepository(Users::class)->find($id);
+
+    if (!$user) {
+        throw $this->createNotFoundException('Utilisateur non trouvé');
+    }
+
+    // Supprimer l'utilisateur
+    $entityManager->remove($user);
+    $entityManager->flush();
+
+    return $this->redirectToRoute('home');
+}
 }

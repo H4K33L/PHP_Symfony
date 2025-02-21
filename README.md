@@ -24,4 +24,3 @@ You also need to generate the BDD :
 
 And after this all you need to do is to run the server with :
  - symfony server:start
->>>>>>>>> Temporary merge branch 2
