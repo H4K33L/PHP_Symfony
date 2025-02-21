@@ -190,7 +190,6 @@
   <nav class="sidebar">
     <h2>Menu</h2>
     <a href="/dashboard">Dashboard</a>
-    <a href="/habitsManager">Habitudes</a>
     {% if app.user %}
       <a href="{% if app.user.group %}/groupManager{% else %}/groupManager/create{% endif %}">Mon Groupe</a>
     {% else %}
