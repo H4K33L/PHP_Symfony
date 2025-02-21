@@ -7,14 +7,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Users;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
 class Groups
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column(length: 255)]
+    private ?string $id = null;
 
     #[ORM\Column(length: 255)]
     private string $name;
@@ -34,11 +35,17 @@ class Groups
         $this->members = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): string
     {
         return $this->id;
     }
 
+    public function setId(string $id): static
+    {
+        $this->id = $id;
+        return $this;
+    }
+    
     public function getName(): string
     {
         return $this->name;

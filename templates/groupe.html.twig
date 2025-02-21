@@ -48,16 +48,39 @@
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
     }
     h1 { text-align: center; color: #3498db; margin-bottom: 1.5rem; }
-    .group-info { margin-bottom: 2rem; }
-    .group-info p { font-size: 1.1rem; margin: 0.5rem 0; }
-    .members { margin-bottom: 2rem; }
-    .members h2 { margin-bottom: 1rem; }
-    .members ul { list-style: none; padding: 0; }
-    .members li { padding: 0.5rem; border-bottom: 1px solid #ddd; }
-    .invite { margin-bottom: 2rem; }
-    .invite h2 { margin-bottom: 0.5rem; }
+    .score-total {
+      font-size: 20px;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 15px;
+    }
+    .members-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    .members-table th, .members-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .members-table th {
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+    }
+    .members-table tr:nth-child(even) { background: #f2f2f2; }
+    .members-table tr:hover { background: #ddd; }
+    .member-score { font-weight: bold; color: #28a745; }
+    .invite {
+      margin-top: 2rem;
+    }
     .invite input[type="text"] {
       padding: 0.5rem; width: 60%; border: 1px solid #ccc; border-radius: 5px; margin-right: 0.5rem;
     }
@@ -66,12 +89,6 @@
       cursor: pointer; transition: background 0.3s;
     }
     .invite button:hover { background: #1e8449; }
-    .actions { text-align: center; margin-top: 2rem; }
-    .actions button {
-      padding: 0.8rem 1.5rem; background: #e74c3c; color: #fff; border: none; border-radius: 5px;
-      cursor: pointer; transition: background 0.3s;
-    }
-    .actions button:hover { background: #c0392b; }
   </style>
 </head>
 <body>
@@ -86,14 +103,34 @@
     <div class="container">
       {% if user.group %}
         <h2>Groupe : {{ group.name }}</h2>
+        <p class="score-total">Score total du groupe : {{ group.score }}</p>
         <p><strong>Chef du groupe :</strong> {{ group.owner.pseudo }}</p>
 
         <h3>Membres :</h3>
-        <ul>
-            {% for member in group.members %}
-               <li>{{ member.pseudo }}</li>
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in group.members|sort((a, b) => b.score <=> a.score) %}
+              <tr>
+                <td>{{ member.pseudo }}</td>
+                <td class="member-score">{{ member.score }}</td>
+              </tr>
             {% endfor %}
-        </ul>
+          </tbody>
+        </table>
+        
+        <div class="invite">
+          <h2>Inviter un utilisateur</h2>
+          <form action="{{ path('group_invite', {'id': group.id}) }}" method="POST">
+            <input type="text" name="pseudo" placeholder="Pseudo de l'utilisateur" required>
+            <button type="submit">Inviter</button>
+          </form>
+        </div>
       {% else %}
         <form action="{{ path('group_create') }}" method="POST">
           <input type="text" name="group_name" placeholder="Nom du groupe" required>
@@ -102,20 +139,5 @@
       {% endif %}
     </div>
   </div>
-  <script>
-    function inviteMember() {
-      const inviteInput = document.getElementById('inviteEmail');
-      const email = inviteInput.value.trim();
-      if (email === '') { alert("Veuillez entrer un email ou un pseudo."); return; }
-      alert("Invitation envoyée à " + email + " !");
-      inviteInput.value = '';
-    }
-    function leaveGroup() {
-      if (confirm("Êtes-vous sûr de vouloir quitter le groupe ?")) {
-        alert("Vous avez quitté le groupe.");
-        window.location.href = "index.html";
-      }
-    }
-  </script>
 </body>
 </html>

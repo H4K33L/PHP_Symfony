@@ -3,81 +3,76 @@
 namespace App\Entity;
 
 use App\Repository\InvitationsRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: InvitationsRepository::class)]
 class Invitations
 {
     #[ORM\Id]
     #[ORM\Column(length: 255)]
-    private ?string $invitation_id = null;
+    private ?string $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $sender_id = null;
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Users $sender = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $receiver_id = null;
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Users $receiver = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $group_id = null;
+    #[ORM\ManyToOne(targetEntity: Groups::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Groups $group = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'boolean')]
     private ?bool $status = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $sent_at = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getInvitationId(): ?string
+    public function setId(string $id): static
     {
-        return $this->invitation_id;
-    }
-
-    public function setInvitationId(string $invitation_id): static
-    {
-        $this->invitation_id = $invitation_id;
-
+        $this->id = $id;
         return $this;
     }
 
-    public function getSenderId(): ?string
+    public function getSender(): ?Users
     {
-        return $this->sender_id;
+        return $this->sender;
     }
 
-    public function setSenderId(string $sender_id): static
+    public function setSender(?Users $sender): self
     {
-        $this->sender_id = $sender_id;
-
+        $this->sender = $sender;
         return $this;
     }
 
-    public function getReceiverId(): ?string
+    public function getReceiver(): ?Users
     {
-        return $this->receiver_id;
+        return $this->receiver;
     }
 
-    public function setReceiverId(string $receiver_id): static
+    public function setReceiver(?Users $receiver): self
     {
-        $this->receiver_id = $receiver_id;
-
+        $this->receiver = $receiver;
         return $this;
     }
 
-    public function getGroupId(): ?string
+    public function getGroup(): ?Groups
     {
-        return $this->group_id;
+        return $this->group;
     }
 
-    public function setGroupId(string $group_id): static
+    public function setGroup(?Groups $group): self
     {
-        $this->group_id = $group_id;
-
+        $this->group = $group;
         return $this;
     }
 
@@ -86,10 +81,9 @@ class Invitations
         return $this->status;
     }
 
-    public function setStatus(bool $status): static
+    public function setStatus(bool $status): self
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -98,10 +92,9 @@ class Invitations
         return $this->sent_at;
     }
 
-    public function setSentAt(\DateTimeInterface $sent_at): static
+    public function setSentAt(\DateTimeInterface $sent_at): self
     {
         $this->sent_at = $sent_at;
-
         return $this;
     }
 }

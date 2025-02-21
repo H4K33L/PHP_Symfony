@@ -46,11 +46,9 @@ class ConexionController extends AbstractController
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
             $user = $usersRepository->findOneBy(['pseudo' => $data['pseudo'] ?? '']);
-            dump($user);
     
             if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
                 $error = 'Identifiants incorrects.';
-                dump($error);
             } else {
                 $userAuthenticator->authenticateUser($user, $authenticator, $request);
                 return $this->redirectToRoute('user_dashboard', ['id' => $user->getId()]);
@@ -108,7 +106,7 @@ class ConexionController extends AbstractController
                 if ($profilePicture) {
                     $fileName = uniqid() . '.' . $profilePicture->guessExtension();
                     $profilePicture->move($this->getParameter('profile_pictures_directory'), $fileName);
-                    $user->setProfilePicture($fileName);
+                    $user->setProfile_Picture($fileName);
                 }
 
                 $errors = $validator->validate($user);
