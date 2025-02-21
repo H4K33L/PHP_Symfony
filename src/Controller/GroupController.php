@@ -86,16 +86,21 @@ class GroupController extends AbstractController
         ]);
     }
 
-    #[Route('/groupManager/leave', name: 'leave_group', methods: ['GET', 'POST'])]
+    #[Route('/groupManager/leave', name: 'leave_group', methods: ['POST'])]
     public function leaveGroup(EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-    
+        
         if (!$user || !$user->getGroup()) {
             return $this->redirectToRoute('groupManager');
         }
-    
+        
         $group = $user->getGroup();
+        if ($group->getOwner() === $user) {
+            $this->addFlash('error', 'Le propriétaire ne peut pas quitter le groupe. Vous devez le supprimer.');
+            return $this->redirectToRoute('group_show', ['id' => $group->getId()]);
+        }
+        
         $user->setGroup(null);
         $entityManager->persist($user);
         $entityManager->flush();
@@ -103,7 +108,8 @@ class GroupController extends AbstractController
         if ($group) {
             $this->updateGroupScore($group, $entityManager);
         }
-    
+        
+        $this->addFlash('success', 'Vous avez quitté le groupe avec succès.');
         return $this->redirectToRoute('groupManager');
     }
 
@@ -187,5 +193,26 @@ class GroupController extends AbstractController
         $group->setScore($score);
         $entityManager->persist($group);
         $entityManager->flush();
+    }
+
+    #[Route('/group/{id}/delete', name: 'group_delete', methods: ['POST'])]
+    public function deleteGroup(Groups $group, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        
+        if ($group->getOwner() !== $user) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer ce groupe.');
+        }
+        
+        foreach ($group->getMembers() as $member) {
+            $member->setGroup(null);
+            $entityManager->persist($member);
+        }
+        
+        $entityManager->remove($group);
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'Le groupe a été supprimé avec succès.');
+        return $this->redirectToRoute('groupManager');
     }
 }
