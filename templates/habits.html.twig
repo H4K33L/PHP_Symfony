@@ -27,6 +27,13 @@
       transform: translateX(0);
       padding: 1rem;
     }
+    /* Sous-titre ajouté dans la nav */
+    .sidebar .sub-title {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      font-weight: normal;
+    }
     .sidebar h2 {
       text-align: center;
       margin-bottom: 2rem;
@@ -154,6 +161,7 @@
 <body>
 
   <nav class="sidebar">
+    <div class="sub-title">Votre groupe</div>
     <h2>Menu</h2>
     <a href="/dashboard">Dashboard</a>
     <a href="/habitsManager">Habitudes</a>
@@ -165,9 +173,7 @@
     <a href="/profil">Mon Profil</a>
     <a href="/deconnexion">Déconnexion</a>
   </nav>
-
-
-
+  
   <div class="main-content">
     <header>
       <h1>Bienvenue, {{ app.user.pseudo }}</h1>
