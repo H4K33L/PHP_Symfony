@@ -120,30 +120,6 @@
         <h1>Bienvenue, {{ user.pseudo }}</h1>
         <div class="score">Score : <span>{{ user.score }}</span></div>
     </header>
-    <section class="habits">
-      <h2>Habitudes du jour</h2>
-      {% set allHabitsValidated = true %}
-      {% for habit in dailyHabits %}
-        {% if not habit.validatedByUsers.contains(user) %}
-          {% set allHabitsValidated = false %}
-          <div class="habit" data-habit-id="{{ habit.Id }}" data-end-time="{{ habit.endTime|date('c') }}">
-            <div>
-              <p><span>{{ habit.text }}</span> - Quotidien</p>
-              <small>Difficulté : {{ habit.difficulty }}</small>
-              <div class="countdown"></div>
-            </div>
-            <form action="{{ path('toggle_habit', {'id': habit.Id}) }}" method="POST">
-              <button type="submit" class="toggle">
-                Terminé
-              </button>
-            </form>
-          </div>
-        {% endif %}
-      {% endfor %}
-      {% if allHabitsValidated %}
-        <div class="message">Les tâches journalières sont accomplies !</div>
-      {% endif %}
-    </section>
     <section class="notifications">
         <h2>Invitations</h2>
         {% if user.receivedInvitations|length > 0 %}

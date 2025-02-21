@@ -17,7 +17,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
-    public function dashboard(Request $request, UsersRepository $usersRepository, HabitsRepository $habitsRepository): Response
+    public function dashboard(Request $request, UsersRepository $usersRepository): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -28,34 +28,23 @@ class DashboardController extends AbstractController
         if (!$user) {
             return $this->redirectToRoute('app_conexion');
         }
-        
-        $dailyHabits = $habitsRepository->findBy([
-            'text' => ['Faire du sport', 'Lire un livre']
-        ]);
 
         return $this->render('dashboard.html.twig', [
-            'user' => $user,
-            'dailyHabits' => $dailyHabits
+            'user' => $user
         ]);
     }
 
     #[Route('/dashboard/{id}', name: 'user_dashboard', methods: ['GET'])]
-    public function userDashboard(UsersRepository $usersRepository, HabitsRepository $habitsRepository, string $id): Response
+    public function userDashboard(UsersRepository $usersRepository, string $id): Response
     {
-        $habits = $entityManager->getRepository(Habits::class)->findAll();
         $user = $usersRepository->find($id);
 
         if (!$user) {
             throw $this->createNotFoundException('Utilisateur non trouvé.');
         }
 
-        $dailyHabits = $habitsRepository->findBy([
-            'text' => ['Faire du sport', 'Lire un livre']
-        ]);
-
         return $this->render('dashboard.html.twig', [
-            'user' => $user,
-            'dailyHabits' => $dailyHabits
+            'user' => $user
         ]);
     }
 }
